@@ -1,9 +1,14 @@
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.util.zip.GZIPOutputStream;
 
 public class Blob {
     protected String hash, projectDirectory, hashPath;
@@ -27,9 +32,28 @@ public class Blob {
         this.hash = hashString(fileContent);
         this.hashPath = this.projectDirectory + "/.gitproject/objects/" + hash;
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter(hashPath));
-        writer.write(fileContent);
-        writer.close();
+        compressAndWriteString(fileContent, hashPath);
+    }
+
+    public static void compressAndWriteString(String input, String hashPath) throws IOException {
+        if (input == null || input.length() == 0) {
+            return;
+        }
+
+        BufferedWriter writer = null;
+
+        try {
+            File file = new File(hashPath);
+            GZIPOutputStream zip = new GZIPOutputStream(new FileOutputStream(file));
+
+            writer = new BufferedWriter(new OutputStreamWriter(zip, "UTF-8"));
+
+            writer.append(input);
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
     }
 
     public String getHash() {
