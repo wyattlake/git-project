@@ -44,16 +44,19 @@ public class Git {
      * @throws Exception
      */
     public void add(String path) throws Exception {
-        if (!files.containsKey(path)) {
-            Blob blob = new Blob(path, projectDirectory);
+        Blob blob = files.get(path);
+        if (blob == null) {
+            Blob newBlob = new Blob(path, projectDirectory);
+            files.put(path, newBlob);
+        } else {
             files.put(path, blob);
-
-            // This code is currently set to update the index file every time you add a new
-            // Blob. However, a more optimized version of this code could wait to update the
-            // index file until multiple blobs have been added but you would have to call
-            // updateIndexFile manually.
-            updateIndexFile();
         }
+
+        // This code is currently set to update the index file every time you add a new
+        // Blob. However, a more optimized version of this code could wait to update the
+        // index file until multiple blobs have been added but you would have to call
+        // updateIndexFile manually.
+        updateIndexFile();
     }
 
     /**
