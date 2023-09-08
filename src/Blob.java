@@ -1,10 +1,6 @@
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -61,6 +57,11 @@ public class Blob {
         return hash;
     }
 
+    /**
+     * Deletes a file. Should not be used in the index code.
+     * 
+     * @throws Exception
+     */
     protected void deleteFile() throws Exception {
         Files.deleteIfExists(Paths.get(hashPath));
     }

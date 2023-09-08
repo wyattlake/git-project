@@ -66,8 +66,7 @@ public class Git {
      * @throws Exception
      */
     public void remove(String path) throws Exception {
-        Blob removed = files.remove(path);
-        removed.deleteFile();
+        files.remove(path);
 
         // Same situation as add().
         updateIndexFile();

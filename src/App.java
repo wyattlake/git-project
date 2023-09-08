@@ -4,6 +4,7 @@ public class App {
         git.init();
         git.add("test.txt");
         git.add("test2.txt");
-        // index.removeBlob("test-project/Main.java");
+        git.remove("test.txt");
+        git.remove("test2.txt");
     }
 }
