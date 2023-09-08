@@ -37,15 +37,36 @@ public class Git {
             Files.createFile(indexFile);
     }
 
+    /**
+     * Adds a new Blob to the index
+     * 
+     * @param path
+     * @throws Exception
+     */
     public void add(String path) throws Exception {
-        Blob blob = new Blob(path, projectDirectory);
-        files.put(path, blob);
-        updateIndexFile();
+        if (!files.containsKey(path)) {
+            Blob blob = new Blob(path, projectDirectory);
+            files.put(path, blob);
+
+            // This code is currently set to update the index file every time you add a new
+            // Blob. However, a more optimized version of this code could wait to update the
+            // index file until multiple blobs have been added but you would have to call
+            // updateIndexFile manually.
+            updateIndexFile();
+        }
     }
 
+    /**
+     * Removes a blob from the index.
+     * 
+     * @param path
+     * @throws Exception
+     */
     public void remove(String path) throws Exception {
         Blob removed = files.remove(path);
         removed.deleteFile();
+
+        // Same situation as add().
         updateIndexFile();
     }
 

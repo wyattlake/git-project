@@ -40,8 +40,6 @@ public class Blob {
 
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            // GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
-            // gzip.write(input.getBytes("UTF-8"));
             try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
                 gzip.write(input.getBytes("UTF-8"));
                 gzip.close();
