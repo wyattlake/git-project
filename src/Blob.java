@@ -1,4 +1,5 @@
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -29,30 +30,32 @@ public class Blob {
 
         String fileContent = Files.readString(Paths.get(projectDirectory + path));
 
-        this.hash = hashString(fileContent);
-        this.hashPath = this.projectDirectory + "/.gitproject/objects/" + hash;
-
-        compressAndWriteString(fileContent, hashPath);
+        compressAndWriteString(fileContent);
     }
 
-    public static void compressAndWriteString(String input, String hashPath) throws IOException {
+    public void compressAndWriteString(String input) throws IOException {
         if (input == null || input.length() == 0) {
             return;
         }
 
-        BufferedWriter writer = null;
-
         try {
-            File file = new File(hashPath);
-            GZIPOutputStream zip = new GZIPOutputStream(new FileOutputStream(file));
-
-            writer = new BufferedWriter(new OutputStreamWriter(zip, "UTF-8"));
-
-            writer.append(input);
-        } finally {
-            if (writer != null) {
-                writer.close();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            // GZIPOutputStream gzip = new GZIPOutputStream(outputStream);
+            // gzip.write(input.getBytes("UTF-8"));
+            try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
+                gzip.write(input.getBytes("UTF-8"));
+                gzip.close();
             }
+            byte[] zippedByteArray = outputStream.toByteArray();
+
+            this.hash = hashString(zippedByteArray);
+            this.hashPath = this.projectDirectory + "/.gitproject/objects/" + hash;
+
+            FileOutputStream fileOutput = new FileOutputStream(hashPath);
+            fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
+            fileOutput.close();
+        } catch (Exception exception) {
+            throw exception;
         }
     }
 
@@ -64,8 +67,8 @@ public class Blob {
         Files.deleteIfExists(Paths.get(hashPath));
     }
 
-    protected String hashString(String input) {
-        byte[] messageDigest = md.digest(input.getBytes());
+    protected String hashString(byte[] byteArray) {
+        byte[] messageDigest = md.digest(byteArray);
         BigInteger no = new BigInteger(1, messageDigest);
 
         // Convert message digest into hex value
