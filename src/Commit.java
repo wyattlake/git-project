@@ -10,13 +10,11 @@ public class Commit {
     String author;
     String summary;
     String parent;
-    String next;
     String treeSha;
-    public Commit(Optional<String> parent, Optional<String> next, String author, String summary){
+    public Commit(Optional<String> parent, String author, String summary){
         this.author = author;
         this.summary = summary;
         if(parent.isPresent())this.parent = parent.get();else{this.parent = "";}
-        if(next.isPresent())this.next = next.get();else{this.next = "";}
         treeSha= makeTree();
     }
 
@@ -24,7 +22,7 @@ public class Commit {
         FileWriter fw = new FileWriter("./objects/"+getSHA());
         fw.write(treeSha+"\n");
         fw.write(parent+"\n");
-        fw.write(next+"\n");
+        fw.write("\n");
         fw.write(author+"\n");
         fw.write(getDate()+"\n");
         fw.write(summary);
@@ -51,7 +49,7 @@ public class Commit {
         return tree.getSHA1();
     }
 
-    private String hashString(byte[] byteArray) throws NoSuchAlgorithmException {
+    public String hashString(byte[] byteArray) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         byte[] messageDigest = md.digest(byteArray);
         BigInteger no = new BigInteger(1, messageDigest);
