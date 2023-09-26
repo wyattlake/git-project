@@ -7,46 +7,42 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 public class Commit {
-    String author;
-    String summary;
-    String parent;
-    String treeSha;
-    public Commit(Optional<String> parent, String author, String summary){
+    String author, summary, parent, treeSha, date, child;
+
+    public Commit(String parent, String author, String summary) throws Exception {
         this.author = author;
         this.summary = summary;
-        if(parent.isPresent())this.parent = parent.get();else{this.parent = "";}
-        treeSha= makeTree();
+        this.parent = parent;
+
+        child = "";
+
+        treeSha = createTree();
+        date = getDate();
     }
 
-    public void writeFile() throws NoSuchAlgorithmException, IOException{
-        FileWriter fw = new FileWriter("./objects/"+getSHA());
-        fw.write(treeSha+"\n");
-        fw.write(parent+"\n");
-        fw.write("\n");
-        fw.write(author+"\n");
-        fw.write(getDate()+"\n");
-        fw.write(summary);
-        fw.close();
+    public Commit(String author, String summary) throws Exception {
+        this("", author, summary);
     }
 
-    public String getSHA() throws NoSuchAlgorithmException{
-        StringBuilder bob = new StringBuilder();
-        bob.append(summary+"\n");
-        bob.append(getDate()+"\n");
-        bob.append(author+"\n");
-        bob.append(treeSha+"\n");
-        bob.append(parent);
-        return hashString(bob.toString().getBytes());
+    public void writeToFile() throws NoSuchAlgorithmException, IOException {
+        StringBuilder builder = new StringBuilder(
+                treeSha + "\n" + parent + "\n" + author + "\n" + date + "\n" + summary);
+
+        String commitHash = Util.hashString(builder.toString());
+
+        // Inserting the nextCommitHash after the second newline
+        builder.insert(builder.indexOf("\n", builder.indexOf("\n") + 1), child + "\n");
+
+        Util.writeFile("objects/" + commitHash, builder.toString());
     }
 
-    public String getDate(){
-        return ""+java.time.LocalDate.now();
+    public static String getDate() {
+        return "" + java.time.LocalDate.now();
     }
 
-    private String makeTree(){
+    public static String createTree() throws Exception {
         Tree tree = new Tree();
-        new File("./objects/"+tree.getSHA1());
-        return tree.getSHA1();
+        return tree.writeToObjects();
     }
 
     public String hashString(byte[] byteArray) throws NoSuchAlgorithmException {

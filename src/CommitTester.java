@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -13,41 +14,45 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 
 public class CommitTester {
-    @BeforeAll
-    static void setUpBeforeClass() throws Exception {
-    }
+    @Test
+    @DisplayName("Verify getDate creates a valid date")
+    public void testGetDate() {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
 
-    @AfterAll
-    static void tearDownAfterClass() throws Exception {
-        Files.deleteIfExists(Paths.get("./objects/"));
+        // Will throw an error if the date format is not valid
+        dtf.parse(Commit.getDate());
     }
 
     @Test
-    @DisplayName("Test the sha generation")
-    public void testSha() throws Exception{
-        Tree t = new Tree();
-        Commit com = new Commit(Optional.empty(),"","");
-        String toHash = "\n"+com.getDate()+"\n\n"+t.getSHA1()+"\n";
-        String testString = com.hashString(toHash.getBytes());
-        assertEquals(testString, com.getSHA());
+    @DisplayName("Verify createTree creates a Tree in the correct location")
+    public void testCreateTree() throws Exception {
+        String treeHash = Commit.createTree();
+
+        // Confirm the empty tree has the correct hash
+        assertEquals(treeHash, "da39a3ee5e6b4b0d3255bfef95601890afd80709");
+
+        // Confirm the tree object file was created
+        assertTrue(Util.exists("objects/da39a3ee5e6b4b0d3255bfef95601890afd80709"));
     }
-    
+
     @Test
     @DisplayName("Tests the write to file")
-    public void testWrite() throws Exception{
-        Commit com = new Commit(Optional.empty(),"David","This is a commit");
-        com.writeFile();
-        File file = new File("./objects/"+com.getSHA());
-        assertTrue(file.exists());
-        Tree t = new Tree();
-        String str = "";
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        while(br.ready()){
-            str+=br.readLine()+"\n";
-        }
-        br.close();
-        String check = t.getSHA1()+"\n"+"\n\n"+"David\n"+com.getDate()+"\n"+"This is a commit\n";
-        assertEquals(str,check);
+    public void testWrite() throws Exception {
+        Commit commit = new Commit("2b98fbd4f414b26b612fa50b17879f62733254e6", "Did incredible things.",
+                "Buddy the Wolverine");
+
+        commit.writeToFile();
+
+        // Confirm sure the hash of the file created is correct
+        assertTrue(Util.exists("objects/b0ced1739869a9ef72749ea17f0beaa5c75a128e"));
+
+        // Confirm the object file contents match what is expected
+        assertEquals("da39a3ee5e6b4b0d3255bfef95601890afd80709\n" +
+                "2b98fbd4f414b26b612fa50b17879f62733254e6\n" +
+                "\n" +
+                "Buddy the Wolverine\n" +
+                "2023/09/21\n" +
+                "Did incredible things.", Util.readFile("objects/b0ced1739869a9ef72749ea17f0beaa5c75a128e"));
     }
 
 }
