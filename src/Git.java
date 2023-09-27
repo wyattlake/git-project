@@ -7,7 +7,7 @@ import java.util.HashMap;
 public class Git {
     protected String projectDirectory, gitDirectory, objectsPath, indexPath;
 
-    protected HashMap<String, Blob> files;
+    protected HashMap<String, String> fileHashMap;
 
     public Git() {
         this("");
@@ -19,7 +19,7 @@ public class Git {
         this.objectsPath = gitDirectory + "objects/";
         this.indexPath = gitDirectory + "index";
 
-        this.files = new HashMap<>();
+        this.fileHashMap = new HashMap<>();
     }
 
     /**
@@ -44,15 +44,10 @@ public class Git {
      * @throws Exception
      */
     public void add(String path) throws Exception {
-        Blob blob = files.get(path);
-        if (blob == null) {
-            Blob newBlob = new Blob(path, projectDirectory);
-            newBlob.writeToObjects();
+        Blob blob = new Blob(path);
+        blob.writeToObjects();
 
-            files.put(path, newBlob);
-        } else {
-            files.put(path, blob);
-        }
+        fileHashMap.putIfAbsent(path, blob.getHash());
 
         // This code is currently set to update the index file every time you add a new
         // Blob. However, a more optimized version of this code could wait to update the
@@ -68,7 +63,7 @@ public class Git {
      * @throws Exception
      */
     public void remove(String path) throws Exception {
-        files.remove(path);
+        fileHashMap.remove(path);
 
         // Same situation as add().
         updateIndexFile();
@@ -81,8 +76,8 @@ public class Git {
      */
     protected void updateIndexFile() throws Exception {
         StringBuilder builder = new StringBuilder();
-        for (HashMap.Entry<String, Blob> file : files.entrySet()) {
-            builder.append(file.getKey() + " : " + file.getValue().getHash() + "\n");
+        for (HashMap.Entry<String, String> file : fileHashMap.entrySet()) {
+            builder.append(file.getKey() + " : " + file.getValue() + "\n");
         }
 
         FileWriter writer = new FileWriter(indexPath, false);

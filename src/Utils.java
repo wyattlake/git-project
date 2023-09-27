@@ -146,9 +146,12 @@ public class Utils {
                 Files.createDirectories(pathObject.getParent());
             }
 
-            FileOutputStream fileOutput = new FileOutputStream(hashPath);
-            fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
-            fileOutput.close();
+            // Only writes if the file doesn't exist
+            if (!exists(hashPath)) {
+                FileOutputStream fileOutput = new FileOutputStream(hashPath);
+                fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
+                fileOutput.close();
+            }
 
             return hash;
         } else {
