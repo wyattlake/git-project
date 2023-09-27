@@ -37,7 +37,7 @@ public class Blob {
             return;
         }
 
-        this.hash = Utils.zipAndHashFile(".gitproject/objects/", content);
+        this.hash = Utils.hashAndWriteFile(".gitproject/objects/", content, Consts.COMPRESS_FILES);
         this.hashPath = this.projectDirectory + ".gitproject/objects/" + hash;
     }
 

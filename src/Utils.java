@@ -121,29 +121,41 @@ public class Utils {
     }
 
     /**
-     * Zips and hashes file contents before saving to a file named after the hash of
-     * the file contents.
+     * Saves contents to file with name equal to the hashed contents
      * 
-     * @param contents
      * @param path
+     * @param content
+     * @param compress Whether or not to zip the file
      * @return Hash of file contents.
      * @throws Exception
      */
-    public static String zipAndHashFile(String path, String content) throws Exception {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
-            gzip.write(content.getBytes("UTF-8"));
+    public static String hashAndWriteFile(String path, String content, boolean compress) throws Exception {
+        if (compress) {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
+                gzip.write(content.getBytes("UTF-8"));
+            }
+            byte[] zippedByteArray = outputStream.toByteArray();
+
+            String hash = Utils.hashString(outputStream.toString());
+            String hashPath = path + hash;
+
+            Path pathObject = Paths.get(hashPath);
+
+            if (pathObject.getParent() != null) {
+                Files.createDirectories(pathObject.getParent());
+            }
+
+            FileOutputStream fileOutput = new FileOutputStream(hashPath);
+            fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
+            fileOutput.close();
+
+            return hash;
+        } else {
+            String hash = hashString(content);
+            writeFile(path + hash, content);
+            return hash;
         }
-        byte[] zippedByteArray = outputStream.toByteArray();
-
-        String hash = Utils.hashString(outputStream.toString());
-        String hashPath = path + hash;
-
-        FileOutputStream fileOutput = new FileOutputStream(hashPath);
-        fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
-        fileOutput.close();
-
-        return hash;
     }
 
     /**

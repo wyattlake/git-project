@@ -72,12 +72,10 @@ public class Tree {
             builder.deleteCharAt(builder.length() - 1);
         }
 
-        String result = builder.toString();
-        String resultHash = Utils.hashString(result);
-        Utils.writeFile(objectsPath + resultHash, result);
+        String zippedTreeHash = Utils.hashAndWriteFile(objectsPath, builder.toString(), Consts.COMPRESS_FILES);
 
         // Returns the hash of the tree so it can be accessed after writing
-        return resultHash;
+        return zippedTreeHash;
     }
 
 }

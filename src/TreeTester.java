@@ -10,6 +10,8 @@ public class TreeTester {
     @BeforeAll
     static void setupBeforeClass() throws Exception {
         Utils.deleteDirectory(".gitproject/objects");
+        Git git = new Git();
+        git.init();
     }
 
     @AfterAll
@@ -90,11 +92,11 @@ public class TreeTester {
         tree.writeToObjects();
 
         // Confirming the tree file has been saved correctly
-        assertTrue(Utils.exists(".gitproject/objects/d38badc4c41e81f12a489e9a17c18d21af629eaf"));
+        assertTrue(Utils.exists(".gitproject/objects/6a15ea192692596193c9e87bfb08d1b1425557a9"));
 
         // Confirming the tree file's contents are correct (Order of blobs and trees is
         // random due to hashmap)
-        assertEquals(Utils.readFile(".gitproject/objects/d38badc4c41e81f12a489e9a17c18d21af629eaf"),
+        assertEquals(Utils.unzipFile(".gitproject/objects/6a15ea192692596193c9e87bfb08d1b1425557a9"),
                 "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file1.txt\n" + //
                         "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file3.txt\n" + //
                         "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file2.txt\n" + //

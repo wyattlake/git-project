@@ -1,4 +1,3 @@
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,16 +23,14 @@ public class Commit {
         this("", author, summary);
     }
 
-    public void writeToFile() throws NoSuchAlgorithmException, IOException {
+    public void writeToFile() throws Exception {
         StringBuilder builder = new StringBuilder(
                 treeSha + "\n" + parent + "\n" + author + "\n" + date + "\n" + summary);
-
-        String commitHash = Utils.hashString(builder.toString());
 
         // Inserting the nextCommitHash after the second newline
         builder.insert(builder.indexOf("\n", builder.indexOf("\n") + 1), child + "\n");
 
-        Utils.writeFile("objects/" + commitHash, builder.toString());
+        Utils.hashAndWriteFile(".gitproject/objects/", builder.toString(), Consts.COMPRESS_FILES);
     }
 
     public static String getDate() {

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class GitTester {
-
     @Test
     @DisplayName("Verify init creates index file and objects folder")
     void testInit() throws Exception {
