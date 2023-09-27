@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,6 +56,31 @@ public class Tree {
             return true;
         }
         return false;
+    }
+
+    public String addDirectory(String path) throws Exception {
+        addDirectoryHelper(path);
+        return writeToObjects();
+    }
+
+    private void addDirectoryHelper(String path) throws Exception {
+        File parent = new File(path);
+
+        for (File child : parent.listFiles()) {
+            if (child.list() == null) {
+                // If the folder contains a file, add the file to the tree
+                Blob blob = new Blob(child.getAbsolutePath());
+                blob.writeToObjects();
+
+                add("blob : " + blob.getHash() + " : " + child.getName());
+            } else {
+                // If the folder contains a subfolder, create a tree from the subfolder and add
+                // the subtree to the original tree
+                Tree subTree = new Tree();
+
+                add("tree : " + subTree.addDirectory(child.getAbsolutePath()) + " : " + child.getName());
+            }
+        }
     }
 
     public String writeToObjects() throws Exception {

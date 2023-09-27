@@ -121,6 +121,22 @@ public class Utils {
     }
 
     /**
+     * Creates a new folde.
+     * 
+     * @param path
+     * @throws IOException
+     */
+    public static void createFolder(String path) throws IOException {
+        Path pathObject = Paths.get(path);
+
+        if (pathObject.getParent() != null) {
+            Files.createDirectories(pathObject.getParent());
+        }
+
+        Files.createDirectories(pathObject);
+    }
+
+    /**
      * Saves contents to file with name equal to the hashed contents
      * 
      * @param path

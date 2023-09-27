@@ -103,4 +103,58 @@ public class TreeTester {
                         "tree : 039c501ac8dfcac91c6f05601cee876e1cc07e17 : tree2.txt\n" + //
                         "tree : a1f239cbcd40f722555acfc7d23be06dee9d815e : tree.txt");
     }
+
+    @Test
+    @DisplayName("Verify adding a directory works in a simple case")
+    void testAddDirectorySimple() throws Exception {
+        Utils.deleteDirectory(".gitproject/objects");
+        Utils.deleteDirectory("dir");
+
+        Utils.writeFile("dir/file1.txt", "file1");
+        Utils.writeFile("dir/file2.txt", "file2");
+        Utils.writeFile("dir/file3.txt", "file3");
+
+        Tree tree = new Tree();
+        tree.addDirectory("dir");
+
+        // Confirming the tree file has been saved to the correct place
+        assertTrue(Utils.exists(".gitproject/objects/06226da7a066932629c0ef261765a1ba4ef674ad"));
+
+        // Confirming the tree file has the correct contents
+        assertEquals("blob : 4a0a81eb2fc662e554e9bc711c44e3caa424fca8 : file1.txt\n" + //
+                "blob : 02ee912b44bc11cc17890b7e6f889471ca89a671 : file3.txt\n" + //
+                "blob : cf38160f02777e57fa8436d860f94caa4c7587d3 : file2.txt",
+                Utils.unzipFile(".gitproject/objects/06226da7a066932629c0ef261765a1ba4ef674ad"));
+    }
+
+    @Test
+    @DisplayName("Verify adding a directory works with nested folders")
+    void testAddDirectoryNested() throws Exception {
+        Utils.deleteDirectory(".gitproject/objects");
+        Utils.deleteDirectory("dir");
+
+        Utils.writeFile("dir/file1.txt", "file1");
+        Utils.writeFile("dir/file2.txt", "file2");
+        Utils.writeFile("dir/file3.txt", "file3");
+
+        Utils.createFolder("dir/subdir1");
+        Utils.writeFile("dir/subdir2/file4.txt", "file4");
+
+        Tree tree = new Tree();
+        tree.addDirectory("dir");
+
+        // Confirming the tree file has been saved to the correct place
+        assertTrue(Utils.exists(".gitproject/objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
+
+        // Confirming the tree file has the correct contents
+        assertEquals("blob : 4a0a81eb2fc662e554e9bc711c44e3caa424fca8 : file1.txt\n" + //
+                "blob : 02ee912b44bc11cc17890b7e6f889471ca89a671 : file3.txt\n" + //
+                "blob : cf38160f02777e57fa8436d860f94caa4c7587d3 : file2.txt\n" + //
+                "tree : 93f7e1782458d7015a24f8d8944d70198fd7414e : subdir2\n" + //
+                "tree : 70246bde7d6bb9bdadc1a69206354b0e54afc709 : subdir1",
+                Utils.unzipFile(".gitproject/objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
+
+        // Confirming the first subtree file has been saved to the correct place
+        assertTrue(Utils.exists(".gitproject/objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
+    }
 }
