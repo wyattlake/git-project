@@ -153,8 +153,5 @@ public class TreeTester {
                 "tree : 93f7e1782458d7015a24f8d8944d70198fd7414e : subdir2\n" + //
                 "tree : 70246bde7d6bb9bdadc1a69206354b0e54afc709 : subdir1",
                 Utils.unzipFile(".gitproject/objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
-
-        // Confirming the first subtree file has been saved to the correct place
-        assertTrue(Utils.exists(".gitproject/objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
     }
 }
