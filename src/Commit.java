@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class Commit {
-    protected String author, summary, parent, treeSha, date, child;
+    protected String author, summary, parent, treeSha, date, child, hash;
     protected static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
 
     public Commit(String parent, String author, String summary) throws Exception {
@@ -18,14 +18,16 @@ public class Commit {
         treeSha = createTree();
         date = getDate();
 
-        writeToFile();
+        hash = writeToFile();
+
+        Utils.writeFile(".gitproject/HEAD", hash);
     }
 
     public Commit(String author, String summary) throws Exception {
         this("", author, summary);
     }
 
-    private void writeToFile() throws Exception {
+    private String writeToFile() throws Exception {
         StringBuilder builder = new StringBuilder(
                 treeSha + "\n" + parent + "\n" + author + "\n" + date + "\n" + summary);
 
@@ -37,6 +39,8 @@ public class Commit {
 
         // Zipping to the location determined by the unzippedHash
         Utils.zipFile(".gitproject/objects/" + unzippedHash, builder.toString());
+
+        return unzippedHash;
     }
 
     public static String getDate() {

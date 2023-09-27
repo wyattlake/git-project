@@ -36,7 +36,7 @@ public class CommitTester {
     }
 
     @Test
-    @DisplayName("Tests the write to file")
+    @DisplayName("Tests the write to file method")
     public void testWrite() throws Exception {
         Utils.deleteDirectory(".gitproject/objects");
 
@@ -58,4 +58,24 @@ public class CommitTester {
                 Utils.unzipFile(".gitproject/objects/b728c31cbdaece6869d6ba741da3685345713e38").substring(114));
     }
 
+    @Test
+    @DisplayName("Tests updating the HEAD file with commits")
+    public void testHead() throws Exception {
+        Utils.deleteFile(".gitproject/HEAD");
+
+        assertFalse(Utils.exists(".gitproject/HEAD"));
+        new Commit("Wyatt Lake", "c1");
+        assertEquals(Utils.readFile(".gitproject/HEAD"), "58b20040746244459378a94429a9b56a35c71249");
+        new Commit("58b20040746244459378a94429a9b56a35c71249", "Wyatt Lake", "c2");
+        assertEquals(Utils.readFile(".gitproject/HEAD"), "42dfa51836e02076badfb7b1932dd37180b2628b");
+        new Commit("42dfa51836e02076badfb7b1932dd37180b2628b", "Wyatt Lake", "c3");
+        assertEquals(Utils.readFile(".gitproject/HEAD"), "51ac9ec4311ad7b699ea326f12eceb37883da019");
+        assertEquals(Utils.unzipFile(".gitproject/objects/51ac9ec4311ad7b699ea326f12eceb37883da019"),
+                "70246bde7d6bb9bdadc1a69206354b0e54afc709\n" + //
+                        "42dfa51836e02076badfb7b1932dd37180b2628b\n" + //
+                        "\n" + //
+                        "Wyatt Lake\n" + //
+                        "2023/09/27\n" + //
+                        "c3");
+    }
 }
