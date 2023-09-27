@@ -38,8 +38,8 @@ public class Blob {
         }
         byte[] zippedByteArray = outputStream.toByteArray();
 
-        this.hash = Util.hashString(outputStream.toString());
-        this.hashPath = this.projectDirectory + "/.gitproject/objects/" + hash;
+        this.hash = Utils.hashString(outputStream.toString());
+        this.hashPath = this.projectDirectory + ".gitproject/objects/" + hash;
 
         FileOutputStream fileOutput = new FileOutputStream(hashPath);
         fileOutput.write(zippedByteArray, 0, zippedByteArray.length);

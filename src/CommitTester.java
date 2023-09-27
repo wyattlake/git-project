@@ -24,7 +24,7 @@ public class CommitTester {
         assertEquals(treeHash, "da39a3ee5e6b4b0d3255bfef95601890afd80709");
 
         // Confirm the tree object file was created
-        assertTrue(Util.exists("objects/da39a3ee5e6b4b0d3255bfef95601890afd80709"));
+        assertTrue(Utils.exists("objects/da39a3ee5e6b4b0d3255bfef95601890afd80709"));
     }
 
     @Test
@@ -36,18 +36,18 @@ public class CommitTester {
         commit.writeToFile();
 
         // Confirm the hash of the file created is correct
-        assertTrue(Util.exists("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442"));
+        assertTrue(Utils.exists("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442"));
 
         // Confirm the object file contents match what is expected
         assertEquals("da39a3ee5e6b4b0d3255bfef95601890afd80709\n" +
                 "2b98fbd4f414b26b612fa50b17879f62733254e6\n" +
                 "\n" +
                 "Buddy the Wolverine\n",
-                Util.readFile("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442").substring(0, 103));
+                Utils.readFile("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442").substring(0, 103));
 
         // Confirm the commit message matches what is expected
         assertEquals("Did incredible things.",
-                Util.readFile("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442").substring(114));
+                Utils.readFile("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442").substring(114));
     }
 
 }

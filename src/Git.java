@@ -14,7 +14,7 @@ public class Git {
     }
 
     public Git(String projectDirectory) {
-        this.projectDirectory = System.getProperty("user.dir") + "/" + projectDirectory + "/";
+        this.projectDirectory = System.getProperty("user.dir") + "/" + projectDirectory;
         this.gitDirectory = this.projectDirectory + ".gitproject/";
         this.objectsPath = gitDirectory + "objects/";
         this.indexPath = gitDirectory + "index";

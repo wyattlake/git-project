@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class Util {
+public class Utils {
     public static String hashString(String input) throws NoSuchAlgorithmException {
         MessageDigest crypt = MessageDigest.getInstance("SHA-1");
         byte[] messageDigest = crypt.digest(input.getBytes());

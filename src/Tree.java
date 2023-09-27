@@ -2,13 +2,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Tree {
+    protected String projectDirectory, objectsPath;
 
     private HashMap<String, String> treeMap;
     private HashMap<String, String> blobMap;
 
-    public Tree() {
+    public Tree(String projectDirectory) {
         treeMap = new HashMap<String, String>();
         blobMap = new HashMap<String, String>();
+
+        this.projectDirectory = projectDirectory;
+        objectsPath = projectDirectory + ".gitproject/objects/";
+    }
+
+    public Tree() {
+        this("");
     }
 
     public void add(String input) throws Exception {
@@ -65,8 +73,8 @@ public class Tree {
         }
 
         String result = builder.toString();
-        String resultHash = Util.hashString(result);
-        Util.writeFile("objects/" + resultHash, result);
+        String resultHash = Utils.hashString(result);
+        Utils.writeFile(objectsPath + resultHash, result);
 
         // Returns the hash of the tree so it can be accessed after writing
         return resultHash;

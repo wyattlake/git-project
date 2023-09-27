@@ -28,12 +28,12 @@ public class Commit {
         StringBuilder builder = new StringBuilder(
                 treeSha + "\n" + parent + "\n" + author + "\n" + date + "\n" + summary);
 
-        String commitHash = Util.hashString(builder.toString());
+        String commitHash = Utils.hashString(builder.toString());
 
         // Inserting the nextCommitHash after the second newline
         builder.insert(builder.indexOf("\n", builder.indexOf("\n") + 1), child + "\n");
 
-        Util.writeFile("objects/" + commitHash, builder.toString());
+        Utils.writeFile("objects/" + commitHash, builder.toString());
     }
 
     public static String getDate() {

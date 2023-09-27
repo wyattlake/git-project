@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test;
 public class TreeTester {
     @BeforeAll
     static void setupBeforeClass() throws Exception {
-        Util.deleteDirectory("objects");
+        Utils.deleteDirectory(".gitproject/objects");
     }
 
     @AfterAll
     static void tearDownAfterClass() throws Exception {
-        Util.deleteDirectory("objects");
+        Utils.deleteDirectory(".gitproject/objects");
     }
 
     @Test
@@ -90,11 +90,11 @@ public class TreeTester {
         tree.writeToObjects();
 
         // Confirming the tree file has been saved correctly
-        assertTrue(Util.exists("objects/d38badc4c41e81f12a489e9a17c18d21af629eaf"));
+        assertTrue(Utils.exists(".gitproject/objects/d38badc4c41e81f12a489e9a17c18d21af629eaf"));
 
         // Confirming the tree file's contents are correct (Order of blobs and trees is
         // random due to hashmap)
-        assertEquals(Util.readFile("objects/d38badc4c41e81f12a489e9a17c18d21af629eaf"),
+        assertEquals(Utils.readFile(".gitproject/objects/d38badc4c41e81f12a489e9a17c18d21af629eaf"),
                 "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file1.txt\n" + //
                         "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file3.txt\n" + //
                         "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file2.txt\n" + //
