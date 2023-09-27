@@ -17,20 +17,26 @@ public class Commit {
 
         treeSha = createTree();
         date = getDate();
+
+        writeToFile();
     }
 
     public Commit(String author, String summary) throws Exception {
         this("", author, summary);
     }
 
-    public void writeToFile() throws Exception {
+    private void writeToFile() throws Exception {
         StringBuilder builder = new StringBuilder(
                 treeSha + "\n" + parent + "\n" + author + "\n" + date + "\n" + summary);
+
+        // No reason to zip here because this hash is not of the entire file's contents.
+        String unzippedHash = Utils.hashString(builder.toString());
 
         // Inserting the nextCommitHash after the second newline
         builder.insert(builder.indexOf("\n", builder.indexOf("\n") + 1), child + "\n");
 
-        Utils.hashAndWriteFile(".gitproject/objects/", builder.toString(), Consts.COMPRESS_FILES);
+        // Zipping to the location determined by the unzippedHash
+        Utils.zipFile(".gitproject/objects/" + unzippedHash, builder.toString());
     }
 
     public static String getDate() {

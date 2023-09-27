@@ -178,6 +178,36 @@ public class Utils {
     }
 
     /**
+     * Saves contents
+     * 
+     * @param path
+     * @param content
+     * @param compress Whether or not to zip the file
+     * @return Hash of file contents.
+     * @throws Exception
+     */
+    public static void zipFile(String path, String content) throws Exception {
+        // Only writes if the file doesn't exist
+        if (!exists(path)) {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
+                gzip.write(content.getBytes("UTF-8"));
+            }
+            byte[] zippedByteArray = outputStream.toByteArray();
+
+            Path pathObject = Paths.get(path);
+
+            if (pathObject.getParent() != null) {
+                Files.createDirectories(pathObject.getParent());
+            }
+
+            FileOutputStream fileOutput = new FileOutputStream(path);
+            fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
+            fileOutput.close();
+        }
+    }
+
+    /**
      * Unzips a file to a string.
      * 
      * @param path
