@@ -47,6 +47,8 @@ public class Git {
         Blob blob = files.get(path);
         if (blob == null) {
             Blob newBlob = new Blob(path, projectDirectory);
+            newBlob.writeToObjects();
+
             files.put(path, newBlob);
         } else {
             files.put(path, blob);
