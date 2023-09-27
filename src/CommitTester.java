@@ -1,16 +1,8 @@
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import org.junit.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 
 public class CommitTester {
@@ -38,21 +30,24 @@ public class CommitTester {
     @Test
     @DisplayName("Tests the write to file")
     public void testWrite() throws Exception {
-        Commit commit = new Commit("2b98fbd4f414b26b612fa50b17879f62733254e6", "Did incredible things.",
-                "Buddy the Wolverine");
+        Commit commit = new Commit("2b98fbd4f414b26b612fa50b17879f62733254e6", "Buddy the Wolverine",
+                "Did incredible things.");
 
         commit.writeToFile();
 
-        // Confirm sure the hash of the file created is correct
-        assertTrue(Util.exists("objects/b0ced1739869a9ef72749ea17f0beaa5c75a128e"));
+        // Confirm the hash of the file created is correct
+        assertTrue(Util.exists("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442"));
 
         // Confirm the object file contents match what is expected
         assertEquals("da39a3ee5e6b4b0d3255bfef95601890afd80709\n" +
                 "2b98fbd4f414b26b612fa50b17879f62733254e6\n" +
                 "\n" +
-                "Buddy the Wolverine\n" +
-                "2023/09/21\n" +
-                "Did incredible things.", Util.readFile("objects/b0ced1739869a9ef72749ea17f0beaa5c75a128e"));
+                "Buddy the Wolverine\n",
+                Util.readFile("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442").substring(0, 103));
+
+        // Confirm the commit message matches what is expected
+        assertEquals("Did incredible things.",
+                Util.readFile("objects/0dfeffda8f5fe22798f4e5270b539e10756c2442").substring(114));
     }
 
 }

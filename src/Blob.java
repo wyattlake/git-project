@@ -1,7 +1,5 @@
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -29,27 +27,23 @@ public class Blob {
         compressAndWriteString(fileContent);
     }
 
-    public void compressAndWriteString(String input) throws IOException {
+    public void compressAndWriteString(String input) throws Exception {
         if (input == null || input.length() == 0) {
             return;
         }
 
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
-                gzip.write(input.getBytes("UTF-8"));
-            }
-            byte[] zippedByteArray = outputStream.toByteArray();
-
-            this.hash = hashString(zippedByteArray);
-            this.hashPath = this.projectDirectory + "/.gitproject/objects/" + hash;
-
-            FileOutputStream fileOutput = new FileOutputStream(hashPath);
-            fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
-            fileOutput.close();
-        } catch (Exception exception) {
-            throw exception;
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
+            gzip.write(input.getBytes("UTF-8"));
         }
+        byte[] zippedByteArray = outputStream.toByteArray();
+
+        this.hash = Util.hashString(outputStream.toString());
+        this.hashPath = this.projectDirectory + "/.gitproject/objects/" + hash;
+
+        FileOutputStream fileOutput = new FileOutputStream(hashPath);
+        fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
+        fileOutput.close();
     }
 
     public String getHash() {
@@ -63,21 +57,5 @@ public class Blob {
      */
     protected void deleteFile() throws Exception {
         Files.deleteIfExists(Paths.get(hashPath));
-    }
-
-    protected String hashString(byte[] byteArray) {
-        byte[] messageDigest = md.digest(byteArray);
-        BigInteger no = new BigInteger(1, messageDigest);
-
-        // Convert message digest into hex value
-        String hashString = no.toString(16);
-
-        // Add preceding 0s to make it 32 bit
-        while (hashString.length() < 32) {
-            hashString = "0" + hashString;
-        }
-
-        // return the HashText
-        return hashString;
     }
 }

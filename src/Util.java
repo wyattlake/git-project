@@ -18,7 +18,7 @@ public class Util {
         String hashString = no.toString(16);
 
         // Add preceding 0s to make it 32 bit
-        while (hashString.length() < 32) {
+        while (hashString.length() < 40) {
             hashString = "0" + hashString;
         }
 

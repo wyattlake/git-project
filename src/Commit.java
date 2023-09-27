@@ -1,13 +1,13 @@
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Commit {
-    String author, summary, parent, treeSha, date, child;
+    protected String author, summary, parent, treeSha, date, child;
+    protected static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
 
     public Commit(String parent, String author, String summary) throws Exception {
         this.author = author;
@@ -37,7 +37,8 @@ public class Commit {
     }
 
     public static String getDate() {
-        return "" + java.time.LocalDate.now();
+        LocalDate localDate = LocalDate.now();
+        return dtf.format(localDate);
     }
 
     public static String createTree() throws Exception {
