@@ -29,7 +29,7 @@ public class GitTester {
         git.init();
 
         Utils.writeFile("testFile.txt", "This is a test file.");
-        git.add("testFile.txt");
+        git.addBlob("testFile.txt");
 
         // Confirm blob file has been created in objects with the correct hash
         assertTrue(Utils.exists(".gitproject/objects/5d6dceb0452f8a0eb37d5bc089984fc05e49fa51"));

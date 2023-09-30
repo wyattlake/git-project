@@ -7,7 +7,8 @@ import java.util.HashMap;
 public class Git {
     protected String projectDirectory, gitDirectory, objectsPath, indexPath;
 
-    protected HashMap<String, String> fileHashMap;
+    protected HashMap<String, String> blobMap;
+    protected HashMap<String, String> treeMap;
 
     public Git() {
         this("");
@@ -19,7 +20,7 @@ public class Git {
         this.objectsPath = gitDirectory + "objects/";
         this.indexPath = gitDirectory + "index";
 
-        this.fileHashMap = new HashMap<>();
+        this.blobMap = new HashMap<>();
     }
 
     /**
@@ -38,16 +39,16 @@ public class Git {
     }
 
     /**
-     * Adds a new Blob to the index
+     * Adds a new file to the index
      * 
      * @param path
      * @throws Exception
      */
-    public void add(String path) throws Exception {
+    public void addFile(String path) throws Exception {
         Blob blob = new Blob(path);
         blob.writeToObjects();
 
-        fileHashMap.putIfAbsent(path, blob.getHash());
+        blobMap.putIfAbsent(path, blob.getHash());
 
         // This code is currently set to update the index file every time you add a new
         // Blob. However, a more optimized version of this code could wait to update the
@@ -57,15 +58,44 @@ public class Git {
     }
 
     /**
-     * Removes a blob from the index.
+     * Adds a new directory to the index
      * 
      * @param path
      * @throws Exception
      */
-    public void remove(String path) throws Exception {
-        fileHashMap.remove(path);
+    public void addDirectory(String path) throws Exception {
+        Tree tree = new Tree();
+        String hash = tree.addDirectory(path);
 
-        // Same situation as add().
+        treeMap.put(path, hash);
+
+        // Same situation as addFile()
+        updateIndexFile();
+    }
+
+    /**
+     * Removes a file from the index.
+     * 
+     * @param path
+     * @throws Exception
+     */
+    public void removeFile(String path) throws Exception {
+        blobMap.remove(path);
+
+        // Same situation as addFile().
+        updateIndexFile();
+    }
+
+    /**
+     * Removes a folder from the index.
+     * 
+     * @param path
+     * @throws Exception
+     */
+    public void removeFolder(String path) throws Exception {
+        treeMap.remove(path);
+
+        // Same situation as addFile().
         updateIndexFile();
     }
 
@@ -76,8 +106,13 @@ public class Git {
      */
     protected void updateIndexFile() throws Exception {
         StringBuilder builder = new StringBuilder();
-        for (HashMap.Entry<String, String> file : fileHashMap.entrySet()) {
-            builder.append(file.getKey() + " : " + file.getValue() + "\n");
+
+        for (HashMap.Entry<String, String> file : blobMap.entrySet()) {
+            builder.append("blob : " + file.getKey() + " : " + file.getValue() + "\n");
+        }
+
+        for (HashMap.Entry<String, String> file : treeMap.entrySet()) {
+            builder.append("tree : " + file.getKey() + " : " + file.getValue() + "\n");
         }
 
         FileWriter writer = new FileWriter(indexPath, false);
