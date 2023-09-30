@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -5,7 +6,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 
 public class Git {
-    protected String projectDirectory, gitDirectory, objectsPath, indexPath;
+    protected Path projectDirectory, gitDirectory, objectsPath, indexPath;
 
     protected HashMap<String, String> blobMap;
     protected HashMap<String, String> treeMap;
@@ -15,12 +16,13 @@ public class Git {
     }
 
     public Git(String projectDirectory) {
-        this.projectDirectory = System.getProperty("user.dir") + "/" + projectDirectory;
-        this.gitDirectory = this.projectDirectory + ".gitproject/";
-        this.objectsPath = gitDirectory + "objects/";
-        this.indexPath = gitDirectory + "index";
+        this.projectDirectory = Paths.get(projectDirectory);
+        this.gitDirectory = this.projectDirectory.resolve(".gitproject/");
+        this.objectsPath = this.gitDirectory.resolve("objects/");
+        this.indexPath = this.gitDirectory.resolve("index");
 
         this.blobMap = new HashMap<>();
+        this.treeMap = new HashMap<>();
     }
 
     /**
@@ -29,13 +31,33 @@ public class Git {
      * @throws Exception
      */
     public void init() throws Exception {
-        Path gitprojectDirectories = Paths.get(objectsPath);
-        if (!Files.exists(gitprojectDirectories))
-            Files.createDirectories(gitprojectDirectories);
+        if (!Files.exists(objectsPath))
+            Files.createDirectories(objectsPath);
 
-        Path indexFile = Paths.get(indexPath);
-        if (!Files.exists(indexFile))
-            Files.createFile(indexFile);
+        if (!Files.exists(indexPath))
+            Files.createFile(indexPath);
+    }
+
+    /**
+     * Adds all files and folders from the project directory to the index
+     * 
+     * @throws Exception
+     */
+    public void add() throws Exception {
+        File projectDirectoryObject = projectDirectory.toFile();
+
+        for (File file : projectDirectoryObject.listFiles()) {
+            if (file.list() == null) {
+                addFile(file.getName());
+            } else {
+                // Prevents the .gitproject folder from being added to the index
+                if (!file.getName().equals(".gitproject")) {
+                    addDirectory(file.getName());
+                }
+            }
+        }
+
+        updateIndexFile();
     }
 
     /**
@@ -50,11 +72,8 @@ public class Git {
 
         blobMap.putIfAbsent(path, blob.getHash());
 
-        // This code is currently set to update the index file every time you add a new
-        // Blob. However, a more optimized version of this code could wait to update the
-        // index file until multiple blobs have been added but you would have to call
-        // updateIndexFile manually.
-        updateIndexFile();
+        // This method now must be called manually for efficiency reasons.
+        // updateIndexFile();
     }
 
     /**
@@ -64,13 +83,14 @@ public class Git {
      * @throws Exception
      */
     public void addDirectory(String path) throws Exception {
-        Tree tree = new Tree();
+        // Create a new tree from the project directory
+        Tree tree = new Tree(projectDirectory.toString());
         String hash = tree.addDirectory(path);
 
         treeMap.put(path, hash);
 
-        // Same situation as addFile()
-        updateIndexFile();
+        // This method now must be called manually for efficiency reasons.
+        // updateIndexFile();
     }
 
     /**
@@ -82,8 +102,8 @@ public class Git {
     public void removeFile(String path) throws Exception {
         blobMap.remove(path);
 
-        // Same situation as addFile().
-        updateIndexFile();
+        // This method now must be called manually for efficiency reasons.
+        // updateIndexFile();
     }
 
     /**
@@ -95,8 +115,8 @@ public class Git {
     public void removeFolder(String path) throws Exception {
         treeMap.remove(path);
 
-        // Same situation as addFile().
-        updateIndexFile();
+        // This method now must be called manually for efficiency reasons.
+        // updateIndexFile();
     }
 
     /**
@@ -108,14 +128,14 @@ public class Git {
         StringBuilder builder = new StringBuilder();
 
         for (HashMap.Entry<String, String> file : blobMap.entrySet()) {
-            builder.append("blob : " + file.getKey() + " : " + file.getValue() + "\n");
+            builder.append("blob : " + file.getValue() + " : " + file.getKey() + "\n");
         }
 
         for (HashMap.Entry<String, String> file : treeMap.entrySet()) {
-            builder.append("tree : " + file.getKey() + " : " + file.getValue() + "\n");
+            builder.append("tree : " + file.getValue() + " : " + file.getKey() + "\n");
         }
 
-        FileWriter writer = new FileWriter(indexPath, false);
+        FileWriter writer = new FileWriter(indexPath.toString(), false);
 
         // Deletes extra \n char
         if (builder.length() > 0) {

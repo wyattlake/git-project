@@ -1,9 +1,11 @@
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 
 public class Blob {
-    protected String hash, projectDirectory, hashPath, content;
+    protected String hash, content;
+    protected Path objectsPath, hashPath;
 
     protected MessageDigest md;
 
@@ -14,7 +16,7 @@ public class Blob {
      * @throws Exception
      */
     public Blob(String path, String projectDirectory) throws Exception {
-        this.projectDirectory = projectDirectory;
+        this.objectsPath = Paths.get(projectDirectory).resolve(".gitproject/objects/");
 
         // Initialize the MessageDigest for hashing
         md = MessageDigest.getInstance("SHA-1");
@@ -29,7 +31,7 @@ public class Blob {
      * @throws Exception
      */
     public Blob(String path) throws Exception {
-        this("", path);
+        this(path, "");
     }
 
     public void writeToObjects() throws Exception {
@@ -37,20 +39,11 @@ public class Blob {
             return;
         }
 
-        this.hash = Utils.hashAndWriteFile(".gitproject/objects/", content, Consts.COMPRESS_FILES);
-        this.hashPath = this.projectDirectory + ".gitproject/objects/" + hash;
+        this.hash = Utils.hashAndWriteFile(objectsPath.toString(), content, Consts.COMPRESS_FILES);
+        this.hashPath = this.objectsPath.resolve(hash);
     }
 
     public String getHash() {
         return hash;
-    }
-
-    /**
-     * Deletes a file. Should not be used in the index code.
-     * 
-     * @throws Exception
-     */
-    protected void deleteFile() throws Exception {
-        Files.deleteIfExists(Paths.get(hashPath));
     }
 }

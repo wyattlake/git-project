@@ -1,9 +1,11 @@
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Tree {
-    protected String projectDirectory, objectsPath;
+    protected Path projectDirectory, objectsPath;
 
     private HashMap<String, String> treeMap;
     private HashMap<String, String> blobMap;
@@ -12,8 +14,8 @@ public class Tree {
         treeMap = new HashMap<String, String>();
         blobMap = new HashMap<String, String>();
 
-        this.projectDirectory = projectDirectory;
-        objectsPath = projectDirectory + ".gitproject/objects/";
+        this.projectDirectory = Paths.get(projectDirectory);
+        objectsPath = this.projectDirectory.resolve(".gitproject/objects/");
     }
 
     public Tree() {
@@ -75,8 +77,9 @@ public class Tree {
                 add("blob : " + blob.getHash() + " : " + child.getName());
             } else {
                 // If the folder contains a subfolder, create a tree from the subfolder and add
-                // the subtree to the original tree
-                Tree subTree = new Tree();
+                // the subtree to the original tree. Note that the subTree inherits the parent
+                // tree's project directory
+                Tree subTree = new Tree(projectDirectory.toString());
 
                 add("tree : " + subTree.addDirectory(child.getAbsolutePath()) + " : " + child.getName());
             }
@@ -98,7 +101,8 @@ public class Tree {
             builder.deleteCharAt(builder.length() - 1);
         }
 
-        String zippedTreeHash = Utils.hashAndWriteFile(objectsPath, builder.toString(), Consts.COMPRESS_FILES);
+        String zippedTreeHash = Utils.hashAndWriteFile(objectsPath.toString(), builder.toString(),
+                Consts.COMPRESS_FILES);
 
         // Returns the hash of the tree so it can be accessed after writing
         return zippedTreeHash;

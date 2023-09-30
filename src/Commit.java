@@ -1,4 +1,6 @@
 import java.math.BigInteger;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
@@ -7,8 +9,12 @@ import java.time.format.DateTimeFormatter;
 public class Commit {
     protected String author, summary, parent, treeSha, date, child, hash;
     protected static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
+    protected Path objectsPath, headPath;
 
-    public Commit(String parent, String author, String summary) throws Exception {
+    public Commit(String parent, String author, String summary, String projectDirectory) throws Exception {
+        this.objectsPath = Paths.get(projectDirectory).resolve(".gitproject/objects/");
+        this.headPath = Paths.get(projectDirectory).resolve(".gitproject/HEAD");
+
         this.author = author;
         this.summary = summary;
         this.parent = parent;
@@ -20,11 +26,11 @@ public class Commit {
 
         hash = writeToFile();
 
-        Utils.writeFile(".gitproject/HEAD", hash);
+        Utils.writeFile(headPath.toString(), hash);
     }
 
     public Commit(String author, String summary) throws Exception {
-        this("", author, summary);
+        this("", author, summary, "");
     }
 
     private String writeToFile() throws Exception {
@@ -38,7 +44,7 @@ public class Commit {
         builder.insert(builder.indexOf("\n", builder.indexOf("\n") + 1), child + "\n");
 
         // Zipping to the location determined by the unzippedHash
-        Utils.zipFile(".gitproject/objects/" + unzippedHash, builder.toString());
+        Utils.zipFile(this.objectsPath.resolve(unzippedHash).toString(), builder.toString());
 
         return unzippedHash;
     }

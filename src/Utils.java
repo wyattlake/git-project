@@ -154,17 +154,16 @@ public class Utils {
             byte[] zippedByteArray = outputStream.toByteArray();
 
             String hash = Utils.hashString(outputStream.toString());
-            String hashPath = path + hash;
 
-            Path pathObject = Paths.get(hashPath);
+            Path pathObject = Paths.get(path).resolve(hash);
 
             if (pathObject.getParent() != null) {
                 Files.createDirectories(pathObject.getParent());
             }
 
             // Only writes if the file doesn't exist
-            if (!exists(hashPath)) {
-                FileOutputStream fileOutput = new FileOutputStream(hashPath);
+            if (!Files.exists(pathObject)) {
+                FileOutputStream fileOutput = new FileOutputStream(pathObject.toString());
                 fileOutput.write(zippedByteArray, 0, zippedByteArray.length);
                 fileOutput.close();
             }

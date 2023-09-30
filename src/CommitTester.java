@@ -41,21 +41,26 @@ public class CommitTester {
         Utils.deleteDirectory(".gitproject/objects");
 
         new Commit("2b98fbd4f414b26b612fa50b17879f62733254e6", "Buddy the Wolverine",
-                "Did incredible things.");
+                "Did incredible things.", "");
+
+        String commitString = "70246bde7d6bb9bdadc1a69206354b0e54afc709\n" +
+                "2b98fbd4f414b26b612fa50b17879f62733254e6\n" +
+                "Buddy the Wolverine\n" +
+                Commit.getDate() + "\n" +
+                "Did incredible things.";
+        String commitStringHash = Utils.hashString(commitString);
+        String finalString = "70246bde7d6bb9bdadc1a69206354b0e54afc709\n" +
+                "2b98fbd4f414b26b612fa50b17879f62733254e6\n\n" +
+                "Buddy the Wolverine\n" +
+                Commit.getDate() + "\n" +
+                "Did incredible things.";
 
         // Confirm the hash of the file created is correct
-        assertTrue(Utils.exists(".gitproject/objects/b728c31cbdaece6869d6ba741da3685345713e38"));
+        assertTrue(Utils.exists(".gitproject/objects/" + commitStringHash));
 
         // Confirm the object file contents match what is expected
-        assertEquals("70246bde7d6bb9bdadc1a69206354b0e54afc709\n" +
-                "2b98fbd4f414b26b612fa50b17879f62733254e6\n" +
-                "\n" +
-                "Buddy the Wolverine\n",
-                Utils.unzipFile(".gitproject/objects/b728c31cbdaece6869d6ba741da3685345713e38").substring(0, 103));
-
-        // Confirm the commit message matches what is expected
-        assertEquals("Did incredible things.",
-                Utils.unzipFile(".gitproject/objects/b728c31cbdaece6869d6ba741da3685345713e38").substring(114));
+        assertEquals(finalString,
+                Utils.unzipFile(".gitproject/objects/" + commitStringHash));
     }
 
     @Test
@@ -64,18 +69,15 @@ public class CommitTester {
         Utils.deleteFile(".gitproject/HEAD");
 
         assertFalse(Utils.exists(".gitproject/HEAD"));
+
         new Commit("Wyatt Lake", "c1");
-        assertEquals(Utils.readFile(".gitproject/HEAD"), "58b20040746244459378a94429a9b56a35c71249");
-        new Commit("58b20040746244459378a94429a9b56a35c71249", "Wyatt Lake", "c2");
-        assertEquals(Utils.readFile(".gitproject/HEAD"), "42dfa51836e02076badfb7b1932dd37180b2628b");
-        new Commit("42dfa51836e02076badfb7b1932dd37180b2628b", "Wyatt Lake", "c3");
-        assertEquals(Utils.readFile(".gitproject/HEAD"), "51ac9ec4311ad7b699ea326f12eceb37883da019");
-        assertEquals(Utils.unzipFile(".gitproject/objects/51ac9ec4311ad7b699ea326f12eceb37883da019"),
-                "70246bde7d6bb9bdadc1a69206354b0e54afc709\n" + //
-                        "42dfa51836e02076badfb7b1932dd37180b2628b\n" + //
-                        "\n" + //
-                        "Wyatt Lake\n" + //
-                        "2023/09/27\n" + //
-                        "c3");
+        String commitString = "70246bde7d6bb9bdadc1a69206354b0e54afc709\n" +
+                "\n" +
+                "Wyatt Lake\n" +
+                Commit.getDate() + "\n" +
+                "c1";
+        String commitStringHash = Utils.hashString(commitString);
+
+        assertEquals(Utils.readFile(".gitproject/HEAD"), commitStringHash);
     }
 }

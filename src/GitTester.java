@@ -29,13 +29,14 @@ public class GitTester {
         git.init();
 
         Utils.writeFile("testFile.txt", "This is a test file.");
-        git.addBlob("testFile.txt");
+        git.addFile("testFile.txt");
 
         // Confirm blob file has been created in objects with the correct hash
         assertTrue(Utils.exists(".gitproject/objects/5d6dceb0452f8a0eb37d5bc089984fc05e49fa51"));
 
         // Confirm index has been updated
-        assertEquals(Utils.readFile(".gitproject/index"), "testFile.txt : 5d6dceb0452f8a0eb37d5bc089984fc05e49fa51");
+        assertEquals(Utils.readFile(".gitproject/index"),
+                "blob : testFile.txt : 5d6dceb0452f8a0eb37d5bc089984fc05e49fa51");
 
         Utils.deleteDirectory(".gitproject/objects");
         Utils.deleteFile(".gitproject/index");
@@ -50,22 +51,23 @@ public class GitTester {
         Utils.writeFile("testFile.txt", "This is a test file.");
         Utils.writeFile("testFile2.txt", "This is another test file.");
 
-        git.add("testFile.txt");
-        git.add("testFile2.txt");
+        git.addFile("testFile.txt");
+        git.addFile("testFile2.txt");
 
         // Confirm index has both files
         assertEquals(Utils.readFile(".gitproject/index"),
-                "testFile2.txt : 7e3c2056ff8f7039e116baac1fc70505cb654578\ntestFile.txt : 5d6dceb0452f8a0eb37d5bc089984fc05e49fa51");
+                "blob : testFile2.txt : 7e3c2056ff8f7039e116baac1fc70505cb654578\nblob : testFile.txt : 5d6dceb0452f8a0eb37d5bc089984fc05e49fa51");
 
-        git.remove("testFile.txt");
+        git.removeFile("testFile.txt");
 
         // Confirm testFile.txt has been removed from index
-        assertEquals(Utils.readFile(".gitproject/index"), "testFile2.txt : 7e3c2056ff8f7039e116baac1fc70505cb654578");
+        assertEquals(Utils.readFile(".gitproject/index"),
+                "blob : testFile2.txt : 7e3c2056ff8f7039e116baac1fc70505cb654578");
 
         // Confirm the blob file still exists
         assertTrue(Utils.exists(".gitproject/objects/5d6dceb0452f8a0eb37d5bc089984fc05e49fa51"));
 
-        git.remove("testFile2.txt");
+        git.removeFile("testFile2.txt");
 
         // Confirm testFile2.txt has been removed from index
         assertEquals(Utils.readFile(".gitproject/index"), "");
@@ -75,5 +77,30 @@ public class GitTester {
 
         Utils.deleteDirectory(".gitproject/objects");
         Utils.deleteFile(".gitproject/index");
+    }
+
+    @Test
+    @DisplayName("Verify add works correctly with files and folders")
+    void testAdd() throws Exception {
+        // Creating a project folder so JUnit files aren't added to the index
+        Git git = new Git("project");
+
+        Utils.writeFile("project/file1.txt", "file1");
+        Utils.writeFile("project/folder1/folder2/file2.txt", "file2");
+
+        git.init();
+        git.add();
+
+        assertEquals(Utils.readFile("project/.gitproject/index"),
+                "blob : 4a0a81eb2fc662e554e9bc711c44e3caa424fca8 : file1.txt\n" + //
+                        "tree : fb5272f8669faa5a21818f72323ff4433184d45e : folder1");
+
+        assertEquals("tree : faa3516b4644211485496cd5a9b3d99f7bf64025 : folder2",
+                Utils.unzipFile("project/.gitproject/objects/fb5272f8669faa5a21818f72323ff4433184d45e"));
+
+        assertEquals("blob : cf38160f02777e57fa8436d860f94caa4c7587d3 : file2.txt",
+                Utils.unzipFile("project/.gitproject/objects/faa3516b4644211485496cd5a9b3d99f7bf64025"));
+
+        Utils.deleteDirectory("project/.gitproject");
     }
 }
