@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -54,8 +56,19 @@ public class Commit {
         return dtf.format(localDate);
     }
 
-    public static String createTree() throws Exception {
+    public String createTree() throws Exception {
         Tree tree = new Tree();
+
+        BufferedReader fileReader = new BufferedReader(new FileReader(headPath.toString()));
+        String nextLine = fileReader.readLine();
+
+        while (nextLine != null) {
+            tree.add(nextLine);
+            nextLine = fileReader.readLine();
+        }
+
+        fileReader.close();
+
         return tree.writeToObjects();
     }
 

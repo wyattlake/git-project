@@ -26,7 +26,8 @@ public class CommitTester {
     @Test
     @DisplayName("Verify createTree creates a Tree in the correct location")
     public void testCreateTree() throws Exception {
-        String treeHash = Commit.createTree();
+        Commit commit = new Commit("Alex Lee", "Code");
+        String treeHash = commit.createTree();
 
         // Confirm the empty tree has the correct hash
         assertEquals(treeHash, "70246bde7d6bb9bdadc1a69206354b0e54afc709");
