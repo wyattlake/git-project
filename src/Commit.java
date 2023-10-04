@@ -11,11 +11,12 @@ import java.time.format.DateTimeFormatter;
 public class Commit {
     protected String author, summary, parent, treeSha, date, child, hash;
     protected static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
-    protected Path objectsPath, headPath;
+    protected Path objectsPath, headPath, indexPath;
 
     public Commit(String parent, String author, String summary, String projectDirectory) throws Exception {
         this.objectsPath = Paths.get(projectDirectory).resolve(".gitproject/objects/");
         this.headPath = Paths.get(projectDirectory).resolve(".gitproject/HEAD");
+        this.indexPath = Paths.get(projectDirectory).resolve(".gitproject/index");
 
         this.author = author;
         this.summary = summary;
@@ -59,7 +60,7 @@ public class Commit {
     public String createTree() throws Exception {
         Tree tree = new Tree();
 
-        BufferedReader fileReader = new BufferedReader(new FileReader(headPath.toString()));
+        BufferedReader fileReader = new BufferedReader(new FileReader(indexPath.toString()));
         String nextLine = fileReader.readLine();
 
         while (nextLine != null) {

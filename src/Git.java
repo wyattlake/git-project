@@ -48,11 +48,11 @@ public class Git {
 
         for (File file : projectDirectoryObject.listFiles()) {
             if (file.list() == null) {
-                addFile(file.getName());
+                addFileToMap(file.getName());
             } else {
                 // Prevents the .gitproject folder from being added to the index
                 if (!file.getName().equals(".gitproject")) {
-                    addDirectory(file.getName());
+                    addDirectoryToMap(file.getName());
                 }
             }
         }
@@ -67,13 +67,22 @@ public class Git {
      * @throws Exception
      */
     public void addFile(String path) throws Exception {
+        addFileToMap(path);
+
+        updateIndexFile();
+    }
+
+    /**
+     * Adds a new file to the index map
+     * 
+     * @param path
+     * @throws Exception
+     */
+    public void addFileToMap(String path) throws Exception {
         Blob blob = new Blob(path);
         blob.writeToObjects();
 
         blobMap.putIfAbsent(path, blob.getHash());
-
-        // This method now must be called manually for efficiency reasons.
-        // updateIndexFile();
     }
 
     /**
@@ -83,14 +92,23 @@ public class Git {
      * @throws Exception
      */
     public void addDirectory(String path) throws Exception {
+        addDirectoryToMap(path);
+
+        updateIndexFile();
+    }
+
+    /**
+     * Adds a new directory to the index map
+     * 
+     * @param path
+     * @throws Exception
+     */
+    public void addDirectoryToMap(String path) throws Exception {
         // Create a new tree from the project directory
         Tree tree = new Tree(projectDirectory.toString());
         String hash = tree.addDirectory(path);
 
         treeMap.put(path, hash);
-
-        // This method now must be called manually for efficiency reasons.
-        // updateIndexFile();
     }
 
     /**
@@ -102,8 +120,7 @@ public class Git {
     public void removeFile(String path) throws Exception {
         blobMap.remove(path);
 
-        // This method now must be called manually for efficiency reasons.
-        // updateIndexFile();
+        updateIndexFile();
     }
 
     /**
@@ -115,8 +132,7 @@ public class Git {
     public void removeFolder(String path) throws Exception {
         treeMap.remove(path);
 
-        // This method now must be called manually for efficiency reasons.
-        // updateIndexFile();
+        updateIndexFile();
     }
 
     /**

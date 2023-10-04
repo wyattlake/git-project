@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 
 public class CommitTester {
@@ -12,6 +13,13 @@ public class CommitTester {
         Utils.deleteDirectory(".gitproject/objects");
         Git git = new Git();
         git.init();
+    }
+
+    @BeforeEach
+    static void deleteFolders() throws Exception {
+        Utils.deleteDirectory(".gitproject/objects");
+        Utils.deleteDirectory(".gitproject/index");
+        Utils.deleteDirectory(".gitproject/HEAD");
     }
 
     @Test
