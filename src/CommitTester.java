@@ -73,8 +73,6 @@ public class CommitTester {
     @Test
     @DisplayName("Tests updating the HEAD file with commits")
     public void testHead() throws Exception {
-        Utils.deleteFile(".gitproject/HEAD");
-
         assertFalse(Utils.exists(".gitproject/HEAD"));
 
         new Commit("Wyatt Lake", "c1");
@@ -86,5 +84,33 @@ public class CommitTester {
         String commitStringHash = Utils.hashString(commitString);
 
         assertEquals(Utils.readFile(".gitproject/HEAD"), commitStringHash);
+    }
+
+    @Test
+    public void test1Commit() throws Exception {
+        Utils.deleteDirectory("project");
+
+        Utils.writeFile("project/file1", "file1");
+        Utils.writeFile("project/file2", "file2");
+
+        Git git = new Git("project");
+        git.init();
+        git.add();
+
+        Commit commit = new Commit("Wyatt", "commit1", "project");
+
+        assertTrue(validCommit(commit.getTree(), "", "", "Wyatt", "commit1"));
+    }
+
+    private boolean validCommit(String tree, String previousCommit, String nextCommit, String author,
+            String summary) throws Exception {
+        String date = Commit.getDate();
+        String commitPartialString = tree + "\n" + previousCommit + "\n" + author + "\n" + date
+                + "\n" + summary;
+        String commitPartialHash = Utils.hashString(commitPartialString);
+        String commitFullString = tree + "\n" + previousCommit + "\n" + nextCommit + "\n" + author + "\n" + date + "\n"
+                + summary;
+
+        return (Utils.unzipFile("project/.gitproject/objects/" + commitPartialHash).equals(commitFullString));
     }
 }

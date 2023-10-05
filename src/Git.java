@@ -79,7 +79,7 @@ public class Git {
      * @throws Exception
      */
     public void addFileToMap(String path) throws Exception {
-        Blob blob = new Blob(path);
+        Blob blob = new Blob(path, projectDirectory.toString());
         blob.writeToObjects();
 
         blobMap.putIfAbsent(path, blob.getHash());

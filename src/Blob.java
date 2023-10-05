@@ -1,11 +1,10 @@
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 
 public class Blob {
     protected String hash, content;
-    protected Path objectsPath, hashPath;
+    protected Path objectsPath, hashPath, projectDirectory;
 
     protected MessageDigest md;
 
@@ -16,12 +15,13 @@ public class Blob {
      * @throws Exception
      */
     public Blob(String path, String projectDirectory) throws Exception {
+        this.projectDirectory = Paths.get(projectDirectory);
         this.objectsPath = Paths.get(projectDirectory).resolve(".gitproject/objects/");
 
         // Initialize the MessageDigest for hashing
         md = MessageDigest.getInstance("SHA-1");
 
-        content = Files.readString(Paths.get(projectDirectory + path));
+        content = Utils.readFile(this.projectDirectory.resolve(path).toString());
     }
 
     /**

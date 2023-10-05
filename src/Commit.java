@@ -8,12 +8,13 @@ import java.time.format.DateTimeFormatter;
 public class Commit {
     protected String author, summary, parent, treeSha, date, child, hash, parentTree;
     protected static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
-    protected Path objectsPath, headPath, indexPath;
+    protected Path objectsPath, headPath, indexPath, projectDirectory;
 
     public Commit(String author, String summary, String projectDirectory) throws Exception {
-        this.objectsPath = Paths.get(projectDirectory).resolve(".gitproject/objects/");
-        this.headPath = Paths.get(projectDirectory).resolve(".gitproject/HEAD");
-        this.indexPath = Paths.get(projectDirectory).resolve(".gitproject/index");
+        this.projectDirectory = Paths.get(projectDirectory);
+        this.objectsPath = this.projectDirectory.resolve(".gitproject/objects/");
+        this.headPath = this.projectDirectory.resolve(".gitproject/HEAD");
+        this.indexPath = this.projectDirectory.resolve(".gitproject/index");
 
         if (!Utils.exists(headPath.toString())) {
             Utils.createFile(headPath.toString());
@@ -99,7 +100,7 @@ public class Commit {
     }
 
     public String createTree() throws Exception {
-        Tree tree = new Tree();
+        Tree tree = new Tree(projectDirectory.toString());
 
         BufferedReader fileReader = new BufferedReader(new FileReader(indexPath.toString()));
         String nextLine = fileReader.readLine();
@@ -116,5 +117,13 @@ public class Commit {
         fileReader.close();
 
         return tree.writeToObjects();
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public String getTree() {
+        return treeSha;
     }
 }
