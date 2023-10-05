@@ -2,7 +2,7 @@ import static org.junit.Assert.*;
 
 import java.time.format.DateTimeFormatter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,10 +16,10 @@ public class CommitTester {
     }
 
     @BeforeEach
-    static void deleteFolders() throws Exception {
+    void deleteFolders() throws Exception {
         Utils.deleteDirectory(".gitproject/objects");
-        Utils.deleteDirectory(".gitproject/index");
-        Utils.deleteDirectory(".gitproject/HEAD");
+        Utils.deleteFile(".gitproject/index");
+        Utils.deleteFile(".gitproject/HEAD");
     }
 
     @Test
@@ -47,19 +47,17 @@ public class CommitTester {
     @Test
     @DisplayName("Tests the write to file method")
     public void testWrite() throws Exception {
-        Utils.deleteDirectory(".gitproject/objects");
-
-        new Commit("2b98fbd4f414b26b612fa50b17879f62733254e6", "Buddy the Wolverine",
+        new Commit("Buddy the Wolverine",
                 "Did incredible things.", "");
 
         String commitString = "70246bde7d6bb9bdadc1a69206354b0e54afc709\n" +
-                "2b98fbd4f414b26b612fa50b17879f62733254e6\n" +
+                "\n" +
                 "Buddy the Wolverine\n" +
                 Commit.getDate() + "\n" +
                 "Did incredible things.";
         String commitStringHash = Utils.hashString(commitString);
         String finalString = "70246bde7d6bb9bdadc1a69206354b0e54afc709\n" +
-                "2b98fbd4f414b26b612fa50b17879f62733254e6\n\n" +
+                "\n\n" +
                 "Buddy the Wolverine\n" +
                 Commit.getDate() + "\n" +
                 "Did incredible things.";

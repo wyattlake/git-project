@@ -1,42 +1,57 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class Commit {
-    protected String author, summary, parent, treeSha, date, child, hash;
+    protected String author, summary, parent, treeSha, date, child, hash, parentTree;
     protected static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu/MM/dd");
     protected Path objectsPath, headPath, indexPath;
 
-    public Commit(String parent, String author, String summary, String projectDirectory) throws Exception {
+    public Commit(String author, String summary, String projectDirectory) throws Exception {
         this.objectsPath = Paths.get(projectDirectory).resolve(".gitproject/objects/");
         this.headPath = Paths.get(projectDirectory).resolve(".gitproject/HEAD");
         this.indexPath = Paths.get(projectDirectory).resolve(".gitproject/index");
 
+        if (!Utils.exists(headPath.toString())) {
+            Utils.createFile(headPath.toString());
+        }
+
+        if (!Utils.exists(indexPath.toString())) {
+            Utils.createFile(indexPath.toString());
+        }
+
         this.author = author;
         this.summary = summary;
-        this.parent = parent;
+        this.parent = Utils.readFile(headPath.toString());
+        this.parentTree = "";
 
         child = "";
+
+        if (parent != "") {
+            String[] previousCommitLines = Utils.unzipFile(parent).split("\n");
+
+            // Gets tree location from first line
+            this.parentTree = previousCommitLines[0];
+
+            Utils.zipFile(objectsPath.resolve(parentTree).toString(), "");
+        }
 
         treeSha = createTree();
         date = getDate();
 
-        hash = writeToFile();
+        hash = writeToObjects();
 
         Utils.writeFile(headPath.toString(), hash);
     }
 
     public Commit(String author, String summary) throws Exception {
-        this("", author, summary, "");
+        this(author, summary, "");
     }
 
-    private String writeToFile() throws Exception {
+    private String writeToObjects() throws Exception {
         StringBuilder builder = new StringBuilder(
                 treeSha + "\n" + parent + "\n" + author + "\n" + date + "\n" + summary);
 
@@ -49,7 +64,33 @@ public class Commit {
         // Zipping to the location determined by the unzippedHash
         Utils.zipFile(this.objectsPath.resolve(unzippedHash).toString(), builder.toString());
 
+        // Modifying previous commit to point to this one
+        if (parent != "") {
+            String parentPath = objectsPath.resolve(parentTree).toString();
+
+            String[] previousCommitLines = Utils.unzipFile(parentPath).split("\n");
+
+            // Updates parent commit's child
+            previousCommitLines[2] = unzippedHash;
+
+            StringBuilder lastCommitBuilder = new StringBuilder();
+
+            for (int i = 0; i < previousCommitLines.length; i++) {
+                lastCommitBuilder.append(previousCommitLines[i] + "\n");
+            }
+
+            Utils.zipFile(parentPath, lastCommitBuilder.toString());
+        }
+
         return unzippedHash;
+    }
+
+    public static String getCommitTree(String commitHash) throws Exception {
+        return getCommitTree(commitHash, "");
+    }
+
+    public static String getCommitTree(String commitHash, String projectDirectory) throws Exception {
+        return Utils.unzipFile(Paths.get(projectDirectory).resolve("objects/" + commitHash).toString()).split("\n")[0];
     }
 
     public static String getDate() {
@@ -68,25 +109,12 @@ public class Commit {
             nextLine = fileReader.readLine();
         }
 
+        if (parentTree != "") {
+            tree.add("tree : " + parentTree);
+        }
+
         fileReader.close();
 
         return tree.writeToObjects();
-    }
-
-    public String hashString(byte[] byteArray) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-1");
-        byte[] messageDigest = md.digest(byteArray);
-        BigInteger no = new BigInteger(1, messageDigest);
-
-        // Convert message digest into hex value
-        String hashString = no.toString(16);
-
-        // Add preceding 0s to make it 32 bit
-        while (hashString.length() < 32) {
-            hashString = "0" + hashString;
-        }
-
-        // return the HashText
-        return hashString;
     }
 }

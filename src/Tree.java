@@ -25,16 +25,16 @@ public class Tree {
     public void add(String input) throws Exception {
         String[] splits = input.split(" : ");
 
-        if (splits.length != 3) {
-            throw new Exception("Invalid add format");
-        }
-
         if (splits[0].equals("tree")) {
-            // Adding a tree
-            if (treeMap.containsKey(splits[2])) {
-                throw new Exception("Cannot add a duplicate tree");
+            if (splits.length == 2) {
+                treeMap.put("", splits[1]);
+            } else {
+                if (treeMap.containsKey(splits[2])) {
+                    throw new Exception("Cannot add a duplicate tree");
+                }
+                treeMap.put(splits[2], splits[1]);
             }
-            treeMap.put(splits[2], splits[1]);
+            // Adding a tree
             return;
 
         } else if (splits[0].equals("blob")) {
@@ -94,7 +94,11 @@ public class Tree {
         }
 
         for (Map.Entry<String, String> entry : treeMap.entrySet()) {
-            builder.append("tree : " + entry.getValue() + " : " + entry.getKey() + "\n");
+            if (entry.getKey() == "") {
+                builder.append("tree : " + entry.getValue() + "\n");
+            } else {
+                builder.append("tree : " + entry.getValue() + " : " + entry.getKey() + "\n");
+            }
         }
 
         if (builder.length() > 0) {
