@@ -110,11 +110,14 @@ public class Commit {
             nextLine = fileReader.readLine();
         }
 
+        fileReader.close();
+
+        // Clears the index file
+        Utils.writeFile(indexPath.toString(), "");
+
         if (parentTree != "") {
             tree.add("tree : " + parentTree);
         }
-
-        fileReader.close();
 
         return tree.writeToObjects();
     }
