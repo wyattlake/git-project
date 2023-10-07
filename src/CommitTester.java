@@ -20,6 +20,7 @@ public class CommitTester {
         Utils.deleteDirectory(".gitproject/objects");
         Utils.deleteFile(".gitproject/index");
         Utils.deleteFile(".gitproject/HEAD");
+        Utils.deleteDirectory("project");
     }
 
     @Test
@@ -110,31 +111,26 @@ public class CommitTester {
 
     @Test
     public void test2Commits() throws Exception {
-        Utils.deleteDirectory("project");
-
-        Utils.writeFile("project/file1", "file1");
-        Utils.writeFile("project/file2", "file2");
-
-        Git git = new Git("project");
-        git.init();
-        git.add();
-
-        Commit c1 = new Commit("Wyatt", "c1", "project");
-
-        // Checking that commit has the correct previous and next SHAs
-        assertTrue(validCommit(c1.getTree(), "", "", "Wyatt", "c1"));
-
-        String treeContents = Utils.unzipFile("project/.gitproject/objects/" + c1.getTree());
-
-        // Checking that the tree file contans both files in it
-        assertTrue(treeContents.contains("file1") && treeContents.contains("file2"));
+        test1Commit();
 
         Utils.writeFile("project/file3", "file3");
         Utils.writeFile("project/folder1/file4", "file4");
 
+        Git git = new Git("project");
+
         git.addFile("file3");
         git.addDirectory("folder1");
 
+        Commit c2 = new Commit("Wyatt", "c2", "project");
+
+        // Checking that commit has the correct previous and next SHAs
+        assertTrue(validCommit(c2.getTree(), "cb38718019af6a7b2356d16f3f4efd088d0f4111", "", "Wyatt", "c2"));
+
+        String c2TreeContents = Utils.unzipFile("project/.gitproject/objects/" + c2.getTree());
+
+        // Checking that the tree file has the correct contents
+        assertTrue(c2TreeContents.contains("file3") && c2TreeContents.contains("folder1")
+                && c2TreeContents.contains("tree : 96aead6804e98650f524020af7eb6dda7b5e37e5"));
     }
 
     private boolean validCommit(String tree, String previousCommit, String nextCommit, String author,

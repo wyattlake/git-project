@@ -32,7 +32,7 @@ public class Commit {
         child = "";
 
         if (parent != "") {
-            String[] previousCommitLines = Utils.unzipFile(parent).split("\n");
+            String[] previousCommitLines = Utils.unzipFile(objectsPath.resolve(parent).toString()).split("\n");
 
             // Gets tree location from first line
             this.parentTree = previousCommitLines[0];
@@ -67,7 +67,7 @@ public class Commit {
 
         // Modifying previous commit to point to this one
         if (parent != "") {
-            String parentPath = objectsPath.resolve(parentTree).toString();
+            String parentPath = objectsPath.resolve(parent).toString();
 
             String[] previousCommitLines = Utils.unzipFile(parentPath).split("\n");
 

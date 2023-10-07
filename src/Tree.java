@@ -61,7 +61,7 @@ public class Tree {
     }
 
     public String addDirectory(String path) throws Exception {
-        addDirectoryHelper(path);
+        addDirectoryHelper(projectDirectory.resolve(path).toString());
         return writeToObjects();
     }
 
