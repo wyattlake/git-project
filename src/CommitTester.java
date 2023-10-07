@@ -108,6 +108,7 @@ public class CommitTester {
         assertTrue(treeContents.contains("file1") && treeContents.contains("file2"));
     }
 
+    @Test
     public void test2Commits() throws Exception {
         Utils.deleteDirectory("project");
 
@@ -118,15 +119,22 @@ public class CommitTester {
         git.init();
         git.add();
 
-        Commit commit = new Commit("Wyatt", "commit1", "project");
+        Commit c1 = new Commit("Wyatt", "c1", "project");
 
         // Checking that commit has the correct previous and next SHAs
-        assertTrue(validCommit(commit.getTree(), "", "", "Wyatt", "commit1"));
+        assertTrue(validCommit(c1.getTree(), "", "", "Wyatt", "c1"));
 
-        String treeContents = Utils.unzipFile("project/.gitproject/objects/" + commit.getTree());
+        String treeContents = Utils.unzipFile("project/.gitproject/objects/" + c1.getTree());
 
         // Checking that the tree file contans both files in it
         assertTrue(treeContents.contains("file1") && treeContents.contains("file2"));
+
+        Utils.writeFile("project/file3", "file3");
+        Utils.writeFile("project/folder1/file4", "file4");
+
+        git.addFile("file3");
+        git.addDirectory("folder1");
+
     }
 
     private boolean validCommit(String tree, String previousCommit, String nextCommit, String author,

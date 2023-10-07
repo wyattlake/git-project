@@ -55,6 +55,13 @@ public class Utils {
         writer.close();
     }
 
+    public static void appendToFile(String path, String content) throws Exception {
+        File file = new File(path);
+        FileWriter fr = new FileWriter(file, true);
+        fr.write(content);
+        fr.close();
+    }
+
     /**
      * Reads a file to a string.
      * 

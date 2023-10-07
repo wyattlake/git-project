@@ -1,15 +1,10 @@
 import java.io.File;
-import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 public class Git {
     protected Path projectDirectory, gitDirectory, objectsPath, indexPath;
-
-    protected HashMap<String, String> blobMap;
-    protected HashMap<String, String> treeMap;
 
     public Git() {
         this("");
@@ -20,9 +15,6 @@ public class Git {
         this.gitDirectory = this.projectDirectory.resolve(".gitproject/");
         this.objectsPath = this.gitDirectory.resolve("objects/");
         this.indexPath = this.gitDirectory.resolve("index");
-
-        this.blobMap = new HashMap<>();
-        this.treeMap = new HashMap<>();
     }
 
     /**
@@ -35,7 +27,7 @@ public class Git {
             Files.createDirectories(objectsPath);
 
         if (!Files.exists(indexPath))
-            Files.createFile(indexPath);
+            Utils.writeFile(indexPath.toString(), "");
     }
 
     /**
@@ -48,28 +40,14 @@ public class Git {
 
         for (File file : projectDirectoryObject.listFiles()) {
             if (file.list() == null) {
-                addFileToMap(file.getName());
+                addFile(file.getName());
             } else {
                 // Prevents the .gitproject folder from being added to the index
                 if (!file.getName().equals(".gitproject")) {
-                    addDirectoryToMap(file.getName());
+                    addDirectory(file.getName());
                 }
             }
         }
-
-        updateIndexFile();
-    }
-
-    /**
-     * Adds a new file to the index
-     * 
-     * @param path
-     * @throws Exception
-     */
-    public void addFile(String path) throws Exception {
-        addFileToMap(path);
-
-        updateIndexFile();
     }
 
     /**
@@ -78,23 +56,15 @@ public class Git {
      * @param path
      * @throws Exception
      */
-    public void addFileToMap(String path) throws Exception {
+    public void addFile(String path) throws Exception {
         Blob blob = new Blob(path, projectDirectory.toString());
         blob.writeToObjects();
 
-        blobMap.putIfAbsent(path, blob.getHash());
-    }
-
-    /**
-     * Adds a new directory to the index
-     * 
-     * @param path
-     * @throws Exception
-     */
-    public void addDirectory(String path) throws Exception {
-        addDirectoryToMap(path);
-
-        updateIndexFile();
+        String prefix = "\n";
+        if (Utils.readFile(indexPath.toString()).equals("")) {
+            prefix = "";
+        }
+        Utils.appendToFile(indexPath.toString(), prefix + "blob : " + blob.getHash() + " : " + path);
     }
 
     /**
@@ -103,12 +73,16 @@ public class Git {
      * @param path
      * @throws Exception
      */
-    public void addDirectoryToMap(String path) throws Exception {
+    public void addDirectory(String path) throws Exception {
         // Create a new tree from the project directory
         Tree tree = new Tree(projectDirectory.toString());
         String hash = tree.addDirectory(path);
 
-        treeMap.put(path, hash);
+        String prefix = "\n";
+        if (Utils.readFile(indexPath.toString()).equals("")) {
+            prefix = "";
+        }
+        Utils.appendToFile(indexPath.toString(), prefix + "tree : " + hash + " : " + path);
     }
 
     /**
@@ -118,9 +92,19 @@ public class Git {
      * @throws Exception
      */
     public void removeFile(String path) throws Exception {
-        blobMap.remove(path);
+        String[] lines = Utils.readFile(indexPath.toString()).split("\n");
 
-        updateIndexFile();
+        StringBuilder builder = new StringBuilder();
+
+        for (String line : lines) {
+            String[] splits = line.split(" : ");
+            // Classic De Morgan's Law moment
+            if (!(splits[0].equals("blob") && splits[2].equals(path))) {
+                builder.append(line);
+            }
+        }
+
+        Utils.writeFile(indexPath.toString(), builder.toString());
     }
 
     /**
@@ -130,35 +114,18 @@ public class Git {
      * @throws Exception
      */
     public void removeFolder(String path) throws Exception {
-        treeMap.remove(path);
+        String[] lines = Utils.readFile(indexPath.toString()).split("\n");
 
-        updateIndexFile();
-    }
-
-    /**
-     * Updates the index file based on the current file HashMap
-     * 
-     * @throws Exception
-     */
-    protected void updateIndexFile() throws Exception {
         StringBuilder builder = new StringBuilder();
 
-        for (HashMap.Entry<String, String> file : blobMap.entrySet()) {
-            builder.append("blob : " + file.getValue() + " : " + file.getKey() + "\n");
+        for (String line : lines) {
+            String[] splits = line.split(" : ");
+            // Classic De Morgan's Law moment
+            if (!(splits[0].equals("tree") && splits[2].equals(path))) {
+                builder.append(line);
+            }
         }
 
-        for (HashMap.Entry<String, String> file : treeMap.entrySet()) {
-            builder.append("tree : " + file.getValue() + " : " + file.getKey() + "\n");
-        }
-
-        FileWriter writer = new FileWriter(indexPath.toString(), false);
-
-        // Deletes extra \n char
-        if (builder.length() > 0) {
-            builder.deleteCharAt(builder.length() - 1);
-        }
-
-        writer.write(builder.toString());
-        writer.close();
+        Utils.writeFile(indexPath.toString(), builder.toString());
     }
 }

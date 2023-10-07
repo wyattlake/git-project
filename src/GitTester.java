@@ -1,10 +1,19 @@
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class GitTester {
+        @BeforeEach
+        void deleteEverything() throws IOException {
+                Utils.deleteDirectory(".gitproject");
+                Utils.deleteDirectory("project");
+        }
+
         @Test
         @DisplayName("Verify init creates index file and objects folder")
         void testInit() throws Exception {
@@ -56,7 +65,7 @@ public class GitTester {
 
                 // Confirm index has both files
                 assertEquals(Utils.readFile(".gitproject/index"),
-                                "blob : 7e3c2056ff8f7039e116baac1fc70505cb654578 : testFile2.txt\nblob : 5d6dceb0452f8a0eb37d5bc089984fc05e49fa51 : testFile.txt");
+                                "blob : 5d6dceb0452f8a0eb37d5bc089984fc05e49fa51 : testFile.txt\nblob : 7e3c2056ff8f7039e116baac1fc70505cb654578 : testFile2.txt");
 
                 git.removeFile("testFile.txt");
 

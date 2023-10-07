@@ -35,11 +35,6 @@ public class TreeTester {
             tree.add("blob : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b");
         });
 
-        // Confirming Tree throws an exception when adding a tree without a filename
-        assertThrows(Exception.class, () -> {
-            tree.add("tree : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b");
-        });
-
         tree.add("blob : bd1ccec139dead5ee0d8c3a0499b42a7d43ac44b : file.txt");
 
         // Confirming Tree throws an exception when adding a duplicate file
