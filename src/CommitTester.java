@@ -127,6 +127,10 @@ public class CommitTester {
         // Checking that commit has the correct previous and next SHAs
         assertTrue(validCommit(c2.getTree(), "cb38718019af6a7b2356d16f3f4efd088d0f4111", "", "Wyatt", "c2"));
 
+        // Checking that the previous commit has been updated to point to the current
+        // commit
+        assertTrue(Utils.unzipFile("project/objects/cb38718019af6a7b2356d16f3f4efd088d0f4111").contains(c2.getHash()));
+
         String c2TreeContents = Utils.unzipFile("project/objects/" + c2.getTree());
 
         // Checking that the tree file has the correct contents
@@ -134,6 +138,54 @@ public class CommitTester {
                 && c2TreeContents.contains("tree : 96aead6804e98650f524020af7eb6dda7b5e37e5"));
     }
 
+    @Test
+    public void test4Commits() throws Exception {
+        test2Commits();
+
+        Utils.writeFile("project/folder2/file5", "file5");
+        Utils.writeFile("project/folder2/file6", "file6");
+
+        Git git = new Git("project");
+
+        git.addDirectory("folder2");
+
+        Commit c3 = new Commit("Wyatt", "c3", "project");
+
+        // Checking that commit has the correct previous and next SHAs
+        assertTrue(validCommit(c3.getTree(), "5f134af32aaf44e1416643fb847d075c2b11652e", "", "Wyatt", "c3"));
+
+        // Checking that the previous commit has been updated to point to the current
+        // commit
+        assertTrue(Utils.unzipFile("project/objects/5f134af32aaf44e1416643fb847d075c2b11652e").contains(c3.getHash()));
+
+        String c3TreeContents = Utils.unzipFile("project/objects/" + c3.getTree());
+
+        // Checking that the tree file has the correct contents
+        assertTrue(c3TreeContents.contains("folder2")
+                && c3TreeContents.contains("tree : 333d75d4368ad760435262cb9800327415d7ac97"));
+
+        Utils.writeFile("project/folder3/folder4/file7", "file7");
+        Utils.writeFile("project/folder3/file8", "file8");
+
+        git.addDirectory("folder3");
+
+        Commit c4 = new Commit("Wyatt", "c4", "project");
+
+        // Checking that commit has the correct previous and next SHAs
+        assertTrue(validCommit(c4.getTree(), c3.getHash(), "", "Wyatt", "c4"));
+
+        // Checking that the previous commit has been updated to point to the current
+        // commit
+        assertTrue(Utils.unzipFile("project/objects/" + c3.getHash()).contains(c4.getHash()));
+
+        String c4TreeContents = Utils.unzipFile("project/objects/" + c4.getTree());
+
+        // Checking that the tree file has the correct contents
+        assertTrue(c4TreeContents.contains("folder3")
+                && c4TreeContents.contains("tree : " + c3.getTree()));
+    }
+
+    // Checks to see if a commit formatted correctly
     private boolean validCommit(String tree, String previousCommit, String nextCommit, String author,
             String summary) throws Exception {
         String date = Commit.getDate();
