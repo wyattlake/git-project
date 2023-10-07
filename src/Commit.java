@@ -80,6 +80,10 @@ public class Commit {
                 lastCommitBuilder.append(previousCommitLines[i] + "\n");
             }
 
+            if (lastCommitBuilder.length() > 0) {
+                lastCommitBuilder.deleteCharAt(lastCommitBuilder.length() - 1);
+            }
+
             Utils.deleteFile(parentPath);
             Utils.zipFile(parentPath, lastCommitBuilder.toString());
         }
