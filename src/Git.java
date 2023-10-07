@@ -12,7 +12,7 @@ public class Git {
 
     public Git(String projectDirectory) {
         this.projectDirectory = Paths.get(projectDirectory);
-        this.gitDirectory = this.projectDirectory.resolve(".gitproject/");
+        this.gitDirectory = this.projectDirectory.resolve("");
         this.objectsPath = this.gitDirectory.resolve("objects/");
         this.indexPath = this.gitDirectory.resolve("index");
     }
@@ -28,26 +28,6 @@ public class Git {
 
         if (!Files.exists(indexPath))
             Utils.writeFile(indexPath.toString(), "");
-    }
-
-    /**
-     * Adds all files and folders from the project directory to the index
-     * 
-     * @throws Exception
-     */
-    public void add() throws Exception {
-        File projectDirectoryObject = projectDirectory.toFile();
-
-        for (File file : projectDirectoryObject.listFiles()) {
-            if (file.list() == null) {
-                addFile(file.getName());
-            } else {
-                // Prevents the .gitproject folder from being added to the index
-                if (!file.getName().equals(".gitproject")) {
-                    addDirectory(file.getName());
-                }
-            }
-        }
     }
 
     /**

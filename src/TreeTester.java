@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 public class TreeTester {
     @BeforeAll
     static void setupBeforeClass() throws Exception {
-        Utils.deleteDirectory(".gitproject/objects");
+        Utils.deleteDirectory("objects");
         Git git = new Git();
         git.init();
     }
 
     @AfterAll
     static void tearDownAfterClass() throws Exception {
-        Utils.deleteDirectory(".gitproject/objects");
+        Utils.deleteDirectory("objects");
     }
 
     @Test
@@ -87,11 +87,11 @@ public class TreeTester {
         tree.writeToObjects();
 
         // Confirming the tree file has been saved correctly
-        assertTrue(Utils.exists(".gitproject/objects/6a15ea192692596193c9e87bfb08d1b1425557a9"));
+        assertTrue(Utils.exists("objects/6a15ea192692596193c9e87bfb08d1b1425557a9"));
 
         // Confirming the tree file's contents are correct (Order of blobs and trees is
         // random due to hashmap)
-        assertEquals(Utils.unzipFile(".gitproject/objects/6a15ea192692596193c9e87bfb08d1b1425557a9"),
+        assertEquals(Utils.unzipFile("objects/6a15ea192692596193c9e87bfb08d1b1425557a9"),
                 "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file1.txt\n" + //
                         "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file3.txt\n" + //
                         "blob : a64e2a4adcc4ae20e6e35babd2a181619cb8e224 : file2.txt\n" + //
@@ -102,7 +102,7 @@ public class TreeTester {
     @Test
     @DisplayName("Verify adding a directory works in a simple case")
     void testAddDirectorySimple() throws Exception {
-        Utils.deleteDirectory(".gitproject/objects");
+        Utils.deleteDirectory("objects");
         Utils.deleteDirectory("dir");
 
         Utils.writeFile("dir/file1.txt", "file1");
@@ -113,19 +113,19 @@ public class TreeTester {
         tree.addDirectory("dir");
 
         // Confirming the tree file has been saved to the correct place
-        assertTrue(Utils.exists(".gitproject/objects/06226da7a066932629c0ef261765a1ba4ef674ad"));
+        assertTrue(Utils.exists("objects/06226da7a066932629c0ef261765a1ba4ef674ad"));
 
         // Confirming the tree file has the correct contents
         assertEquals("blob : 4a0a81eb2fc662e554e9bc711c44e3caa424fca8 : file1.txt\n" + //
                 "blob : 02ee912b44bc11cc17890b7e6f889471ca89a671 : file3.txt\n" + //
                 "blob : cf38160f02777e57fa8436d860f94caa4c7587d3 : file2.txt",
-                Utils.unzipFile(".gitproject/objects/06226da7a066932629c0ef261765a1ba4ef674ad"));
+                Utils.unzipFile("objects/06226da7a066932629c0ef261765a1ba4ef674ad"));
     }
 
     @Test
     @DisplayName("Verify adding a directory works with nested folders")
     void testAddDirectoryNested() throws Exception {
-        Utils.deleteDirectory(".gitproject/objects");
+        Utils.deleteDirectory("objects");
         Utils.deleteDirectory("dir");
 
         Utils.writeFile("dir/file1.txt", "file1");
@@ -139,7 +139,7 @@ public class TreeTester {
         tree.addDirectory("dir");
 
         // Confirming the tree file has been saved to the correct place
-        assertTrue(Utils.exists(".gitproject/objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
+        assertTrue(Utils.exists("objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
 
         // Confirming the tree file has the correct contents
         assertEquals("blob : 4a0a81eb2fc662e554e9bc711c44e3caa424fca8 : file1.txt\n" + //
@@ -147,6 +147,6 @@ public class TreeTester {
                 "blob : cf38160f02777e57fa8436d860f94caa4c7587d3 : file2.txt\n" + //
                 "tree : 93f7e1782458d7015a24f8d8944d70198fd7414e : subdir2\n" + //
                 "tree : 70246bde7d6bb9bdadc1a69206354b0e54afc709 : subdir1",
-                Utils.unzipFile(".gitproject/objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
+                Utils.unzipFile("objects/b9b17e90c93e4ed5933633d2859e9938459c30af"));
     }
 }

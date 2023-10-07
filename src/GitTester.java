@@ -20,11 +20,11 @@ public class GitTester {
                 Git git = new Git();
                 git.init();
 
-                assertTrue(Utils.exists(".gitproject/objects"));
-                assertTrue(Utils.exists(".gitproject/index"));
+                assertTrue(Utils.exists("objects"));
+                assertTrue(Utils.exists("index"));
 
-                Utils.deleteDirectory(".gitproject/objects");
-                Utils.deleteFile(".gitproject/index");
+                Utils.deleteDirectory("objects");
+                Utils.deleteFile("index");
         }
 
         @Test
@@ -41,14 +41,14 @@ public class GitTester {
                 git.addFile("testFile.txt");
 
                 // Confirm blob file has been created in objects with the correct hash
-                assertTrue(Utils.exists(".gitproject/objects/5d6dceb0452f8a0eb37d5bc089984fc05e49fa51"));
+                assertTrue(Utils.exists("objects/5d6dceb0452f8a0eb37d5bc089984fc05e49fa51"));
 
                 // Confirm index has been updated
-                assertEquals(Utils.readFile(".gitproject/index"),
+                assertEquals(Utils.readFile("index"),
                                 "blob : 5d6dceb0452f8a0eb37d5bc089984fc05e49fa51 : testFile.txt");
 
-                Utils.deleteDirectory(".gitproject/objects");
-                Utils.deleteFile(".gitproject/index");
+                Utils.deleteDirectory("objects");
+                Utils.deleteFile("index");
         }
 
         @Test
@@ -64,28 +64,28 @@ public class GitTester {
                 git.addFile("testFile2.txt");
 
                 // Confirm index has both files
-                assertEquals(Utils.readFile(".gitproject/index"),
+                assertEquals(Utils.readFile("index"),
                                 "blob : 5d6dceb0452f8a0eb37d5bc089984fc05e49fa51 : testFile.txt\nblob : 7e3c2056ff8f7039e116baac1fc70505cb654578 : testFile2.txt");
 
                 git.removeFile("testFile.txt");
 
                 // Confirm testFile.txt has been removed from index
-                assertEquals(Utils.readFile(".gitproject/index"),
+                assertEquals(Utils.readFile("index"),
                                 "blob : 7e3c2056ff8f7039e116baac1fc70505cb654578 : testFile2.txt");
 
                 // Confirm the blob file still exists
-                assertTrue(Utils.exists(".gitproject/objects/5d6dceb0452f8a0eb37d5bc089984fc05e49fa51"));
+                assertTrue(Utils.exists("objects/5d6dceb0452f8a0eb37d5bc089984fc05e49fa51"));
 
                 git.removeFile("testFile2.txt");
 
                 // Confirm testFile2.txt has been removed from index
-                assertEquals(Utils.readFile(".gitproject/index"), "");
+                assertEquals(Utils.readFile("index"), "");
 
                 // Confirm the blob file still exists
-                assertTrue(Utils.exists(".gitproject/objects/7e3c2056ff8f7039e116baac1fc70505cb654578"));
+                assertTrue(Utils.exists("objects/7e3c2056ff8f7039e116baac1fc70505cb654578"));
 
-                Utils.deleteDirectory(".gitproject/objects");
-                Utils.deleteFile(".gitproject/index");
+                Utils.deleteDirectory("objects");
+                Utils.deleteFile("index");
         }
 
         @Test
@@ -98,17 +98,18 @@ public class GitTester {
                 Utils.writeFile("project/folder1/folder2/file2.txt", "file2");
 
                 git.init();
-                git.add();
+                git.addFile("file1.txt");
+                git.addDirectory("folder1");
 
-                assertEquals(Utils.readFile("project/.gitproject/index"),
+                assertEquals(Utils.readFile("project/index"),
                                 "blob : 4a0a81eb2fc662e554e9bc711c44e3caa424fca8 : file1.txt\n" + //
                                                 "tree : fb5272f8669faa5a21818f72323ff4433184d45e : folder1");
 
                 assertEquals("tree : faa3516b4644211485496cd5a9b3d99f7bf64025 : folder2",
-                                Utils.unzipFile("project/.gitproject/objects/fb5272f8669faa5a21818f72323ff4433184d45e"));
+                                Utils.unzipFile("project/objects/fb5272f8669faa5a21818f72323ff4433184d45e"));
 
                 assertEquals("blob : cf38160f02777e57fa8436d860f94caa4c7587d3 : file2.txt",
-                                Utils.unzipFile("project/.gitproject/objects/faa3516b4644211485496cd5a9b3d99f7bf64025"));
+                                Utils.unzipFile("project/objects/faa3516b4644211485496cd5a9b3d99f7bf64025"));
 
                 Utils.deleteDirectory("project/.gitproject");
         }

@@ -15,7 +15,7 @@ public class Tree {
         blobMap = new HashMap<String, String>();
 
         this.projectDirectory = Paths.get(projectDirectory);
-        objectsPath = this.projectDirectory.resolve(".gitproject/objects/");
+        objectsPath = this.projectDirectory.resolve("objects/");
     }
 
     public Tree() {

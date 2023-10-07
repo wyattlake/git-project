@@ -16,7 +16,7 @@ public class Blob {
      */
     public Blob(String path, String projectDirectory) throws Exception {
         this.projectDirectory = Paths.get(projectDirectory);
-        this.objectsPath = Paths.get(projectDirectory).resolve(".gitproject/objects/");
+        this.objectsPath = Paths.get(projectDirectory).resolve("objects/");
 
         // Initialize the MessageDigest for hashing
         md = MessageDigest.getInstance("SHA-1");

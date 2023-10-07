@@ -10,16 +10,16 @@ import org.junit.jupiter.api.DisplayName;
 public class CommitTester {
     @BeforeAll
     static void setupBeforeClass() throws Exception {
-        Utils.deleteDirectory(".gitproject/objects");
+        Utils.deleteDirectory("objects");
         Git git = new Git();
         git.init();
     }
 
     @BeforeEach
     void deleteFolders() throws Exception {
-        Utils.deleteDirectory(".gitproject/objects");
-        Utils.deleteFile(".gitproject/index");
-        Utils.deleteFile(".gitproject/HEAD");
+        Utils.deleteDirectory("objects");
+        Utils.deleteFile("index");
+        Utils.deleteFile("HEAD");
         Utils.deleteDirectory("project");
     }
 
@@ -42,7 +42,7 @@ public class CommitTester {
         assertEquals(treeHash, "70246bde7d6bb9bdadc1a69206354b0e54afc709");
 
         // Confirm the tree object file was created
-        assertTrue(Utils.exists(".gitproject/objects/70246bde7d6bb9bdadc1a69206354b0e54afc709"));
+        assertTrue(Utils.exists("objects/70246bde7d6bb9bdadc1a69206354b0e54afc709"));
     }
 
     @Test
@@ -64,17 +64,17 @@ public class CommitTester {
                 "Did incredible things.";
 
         // Confirm the hash of the file created is correct
-        assertTrue(Utils.exists(".gitproject/objects/" + commitStringHash));
+        assertTrue(Utils.exists("objects/" + commitStringHash));
 
         // Confirm the object file contents match what is expected
         assertEquals(finalString,
-                Utils.unzipFile(".gitproject/objects/" + commitStringHash));
+                Utils.unzipFile("objects/" + commitStringHash));
     }
 
     @Test
     @DisplayName("Tests updating the HEAD file with commits")
     public void testHead() throws Exception {
-        assertFalse(Utils.exists(".gitproject/HEAD"));
+        assertFalse(Utils.exists("HEAD"));
 
         new Commit("Wyatt Lake", "c1");
         String commitString = "70246bde7d6bb9bdadc1a69206354b0e54afc709\n" +
@@ -84,7 +84,7 @@ public class CommitTester {
                 "c1";
         String commitStringHash = Utils.hashString(commitString);
 
-        assertEquals(Utils.readFile(".gitproject/HEAD"), commitStringHash);
+        assertEquals(Utils.readFile("HEAD"), commitStringHash);
     }
 
     @Test
@@ -96,14 +96,15 @@ public class CommitTester {
 
         Git git = new Git("project");
         git.init();
-        git.add();
+        git.addFile("file1");
+        git.addFile("file2");
 
         Commit commit = new Commit("Wyatt", "commit1", "project");
 
         // Checking that commit has the correct previous and next SHAs
         assertTrue(validCommit(commit.getTree(), "", "", "Wyatt", "commit1"));
 
-        String treeContents = Utils.unzipFile("project/.gitproject/objects/" + commit.getTree());
+        String treeContents = Utils.unzipFile("project/objects/" + commit.getTree());
 
         // Checking that the tree file contans both files in it
         assertTrue(treeContents.contains("file1") && treeContents.contains("file2"));
@@ -126,7 +127,7 @@ public class CommitTester {
         // Checking that commit has the correct previous and next SHAs
         assertTrue(validCommit(c2.getTree(), "cb38718019af6a7b2356d16f3f4efd088d0f4111", "", "Wyatt", "c2"));
 
-        String c2TreeContents = Utils.unzipFile("project/.gitproject/objects/" + c2.getTree());
+        String c2TreeContents = Utils.unzipFile("project/objects/" + c2.getTree());
 
         // Checking that the tree file has the correct contents
         assertTrue(c2TreeContents.contains("file3") && c2TreeContents.contains("folder1")
@@ -142,6 +143,6 @@ public class CommitTester {
         String commitFullString = tree + "\n" + previousCommit + "\n" + nextCommit + "\n" + author + "\n" + date + "\n"
                 + summary;
 
-        return (Utils.unzipFile("project/.gitproject/objects/" + commitPartialHash).equals(commitFullString));
+        return (Utils.unzipFile("project/objects/" + commitPartialHash).equals(commitFullString));
     }
 }

@@ -12,9 +12,9 @@ public class Commit {
 
     public Commit(String author, String summary, String projectDirectory) throws Exception {
         this.projectDirectory = Paths.get(projectDirectory);
-        this.objectsPath = this.projectDirectory.resolve(".gitproject/objects/");
-        this.headPath = this.projectDirectory.resolve(".gitproject/HEAD");
-        this.indexPath = this.projectDirectory.resolve(".gitproject/index");
+        this.objectsPath = this.projectDirectory.resolve("objects/");
+        this.headPath = this.projectDirectory.resolve("HEAD");
+        this.indexPath = this.projectDirectory.resolve("index");
 
         if (!Utils.exists(headPath.toString())) {
             Utils.createFile(headPath.toString());
