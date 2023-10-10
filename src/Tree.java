@@ -112,4 +112,35 @@ public class Tree {
         return zippedTreeHash;
     }
 
+    // Parses a tree file and returns a Tree object
+    public static Tree parseTreeFile(String contents) throws Exception {
+        Tree result = new Tree();
+        String[] lines = contents.split("\n");
+
+        for (String line : lines) {
+            result.add(line);
+        }
+
+        return result;
+    }
+
+    public boolean containsFile(String filename) {
+        return blobMap.containsKey(filename);
+    }
+
+    public String getFileHash(String file) {
+        return blobMap.get(file);
+    }
+
+    public String getTreeHash(String tree) {
+        return treeMap.get(tree);
+    }
+
+    public HashMap<String, String> getFileMap() {
+        return blobMap;
+    }
+
+    public String getPreviousTreeHash() {
+        return this.treeMap.getOrDefault("", "");
+    }
 }

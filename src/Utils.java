@@ -144,6 +144,22 @@ public class Utils {
     }
 
     /**
+     * Returns the hashed zip of a string
+     * 
+     * @param input
+     * @return
+     * @throws Exception
+     */
+    public static String getHashedZip(String input) throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzip = new GZIPOutputStream(outputStream)) {
+            gzip.write(input.getBytes("UTF-8"));
+        }
+
+        return Utils.hashString(outputStream.toString());
+    }
+
+    /**
      * Saves contents to file with name equal to the hashed contents
      * 
      * @param path

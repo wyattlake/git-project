@@ -107,4 +107,34 @@ public class Git {
 
         Utils.writeFile(indexPath.toString(), builder.toString());
     }
+
+    /**
+     * Adds a delete file entry to the index file.
+     * 
+     * @param path
+     * @throws Exception
+     */
+    public void deleteFile(String path) throws Exception {
+        String prefix = "\n";
+        if (Utils.readFile(indexPath.toString()).equals("")) {
+            prefix = "";
+        }
+
+        Utils.appendToFile(indexPath.toString(), prefix + "*deleted* " + path);
+    }
+
+    /**
+     * Adds an edit file entry to the index file.
+     * 
+     * @param path
+     * @throws Exception
+     */
+    public void editFile(String path) throws Exception {
+        String prefix = "\n";
+        if (Utils.readFile(indexPath.toString()).equals("")) {
+            prefix = "";
+        }
+
+        Utils.appendToFile(indexPath.toString(), prefix + "*edited* " + path);
+    }
 }

@@ -112,12 +112,18 @@ public class CommitTester {
 
     @Test
     public void test2Commits() throws Exception {
-        test1Commit();
+        Utils.writeFile("project/file1", "file1");
+        Utils.writeFile("project/file2", "file2");
+
+        Git git = new Git("project");
+        git.init();
+        git.addFile("file1");
+        git.addFile("file2");
+
+        Commit c1 = new Commit("Wyatt", "commit1", "project");
 
         Utils.writeFile("project/file3", "file3");
         Utils.writeFile("project/folder1/file4", "file4");
-
-        Git git = new Git("project");
 
         git.addFile("file3");
         git.addDirectory("folder1");
@@ -125,11 +131,12 @@ public class CommitTester {
         Commit c2 = new Commit("Wyatt", "c2", "project");
 
         // Checking that commit has the correct previous and next SHAs
-        assertTrue(validCommit(c2.getTree(), "cb38718019af6a7b2356d16f3f4efd088d0f4111", "", "Wyatt", "c2"));
+        assertTrue(validCommit(c2.getTree(), c1.getHash(), "", "Wyatt", "c2"));
 
         // Checking that the previous commit has been updated to point to the current
         // commit
-        assertTrue(Utils.unzipFile("project/objects/cb38718019af6a7b2356d16f3f4efd088d0f4111").contains(c2.getHash()));
+        assertTrue(Utils.unzipFile("project/objects/" + c1.getHash())
+                .contains(c2.getHash()));
 
         String c2TreeContents = Utils.unzipFile("project/objects/" + c2.getTree());
 
@@ -140,23 +147,38 @@ public class CommitTester {
 
     @Test
     public void test4Commits() throws Exception {
-        test2Commits();
+        Utils.writeFile("project/file1", "file1");
+        Utils.writeFile("project/file2", "file2");
+
+        Git git = new Git("project");
+        git.init();
+        git.addFile("file1");
+        git.addFile("file2");
+
+        new Commit("Wyatt", "commit1", "project");
+
+        Utils.writeFile("project/file3", "file3");
+        Utils.writeFile("project/folder1/file4", "file4");
+
+        git.addFile("file3");
+        git.addDirectory("folder1");
+
+        Commit c2 = new Commit("Wyatt", "c2", "project");
 
         Utils.writeFile("project/folder2/file5", "file5");
         Utils.writeFile("project/folder2/file6", "file6");
-
-        Git git = new Git("project");
 
         git.addDirectory("folder2");
 
         Commit c3 = new Commit("Wyatt", "c3", "project");
 
         // Checking that commit has the correct previous and next SHAs
-        assertTrue(validCommit(c3.getTree(), "5f134af32aaf44e1416643fb847d075c2b11652e", "", "Wyatt", "c3"));
+        assertTrue(validCommit(c3.getTree(), c2.getHash(), "", "Wyatt", "c3"));
 
         // Checking that the previous commit has been updated to point to the current
         // commit
-        assertTrue(Utils.unzipFile("project/objects/5f134af32aaf44e1416643fb847d075c2b11652e").contains(c3.getHash()));
+        assertTrue(Utils.unzipFile("project/objects/" + c2.getHash())
+                .contains(c3.getHash()));
 
         String c3TreeContents = Utils.unzipFile("project/objects/" + c3.getTree());
 
@@ -185,6 +207,89 @@ public class CommitTester {
                 && c4TreeContents.contains("tree : " + c3.getTree()));
     }
 
+    @Test
+    public void testEditAndDelete() throws Exception {
+        Utils.writeFile("f1", "f1");
+        Utils.writeFile("f2", "f2");
+
+        Git git = new Git();
+        git.init();
+        git.addFile("f1");
+        git.addFile("f2");
+
+        Commit c1 = new Commit("Wyatt", "c1");
+
+        Tree c1Tree = Tree.parseTreeFile(Utils.unzipFile("objects/" + c1.getTree()));
+
+        // Making sure the commit tree both new files
+        assertTrue(c1Tree.containsFile("f1") && c1Tree.containsFile("f2"));
+
+        // Making sure the commit tree files are hashed in the objects folder
+        assertTrue(Utils.exists("objects/" + Utils.getHashedZip("f1"))
+                && Utils.exists("objects/" + Utils.getHashedZip("f2")));
+
+        Utils.writeFile("f1", "f1_edited");
+        Utils.writeFile("f3", "f3");
+
+        git.editFile("f1");
+        git.addFile("f3");
+
+        Commit c2 = new Commit("Wyatt", "c2");
+
+        Tree c2Tree = Tree.parseTreeFile(Utils.unzipFile("objects/" + c2.getTree()));
+
+        // Making sure the commit tree contains all files
+        assertTrue(c2Tree.containsFile("f1") && c2Tree.containsFile("f2") && c2Tree.containsFile("f3"));
+
+        // Making sure the commit tree points to the correct object files
+        assertEquals(Utils.unzipFile("objects/" + c2Tree.getFileHash("f1")), "f1_edited");
+        assertEquals(Utils.unzipFile("objects/" + c2Tree.getFileHash("f2")), "f2");
+        assertEquals(Utils.unzipFile("objects/" + c2Tree.getFileHash("f3")), "f3");
+
+        Utils.writeFile("f4", "f4");
+        Utils.writeFile("f5", "f5");
+
+        git.addFile("f4");
+        git.addFile("f5");
+
+        Commit c3 = new Commit("Wyatt", "c3");
+
+        Tree c3Tree = Tree.parseTreeFile(Utils.unzipFile("objects/" + c3.getTree()));
+
+        // Making sure the commit tree contains new files and has its parent set to c2's
+        // tree
+        assertTrue(c3Tree.getPreviousTreeHash().equals(c2.getTree())
+                && c3Tree.containsFile("f4") && c3Tree.containsFile("f5"));
+
+        git.deleteFile("f4");
+
+        Commit c4 = new Commit("Wyatt", "c4");
+        Tree c4Tree = Tree.parseTreeFile(Utils.unzipFile("objects/" + c4.getTree()));
+
+        // Ensuring c4's tree has ancestor c2 and also contains f3, f5 but not f4
+        assertTrue(c4Tree.getPreviousTreeHash().equals(c2.getTree())
+                && c4Tree.containsFile("f5") && !c4Tree.containsFile("f4"));
+
+        Utils.writeFile("f2", "f2_edited");
+
+        git.editFile("f2");
+        git.deleteFile("f1");
+
+        Commit c5 = new Commit("Wyatt", "c5");
+        Tree c5Tree = Tree.parseTreeFile(Utils.unzipFile("objects/" + c5.getTree()));
+
+        // Ensuring c5's tree has no ancestor and contains f2, f3, f5 but not f1, f4
+        assertTrue(c5Tree.getPreviousTreeHash().equals("")
+                && c5Tree.containsFile("f2") && c5Tree.containsFile("f3") && c5Tree.containsFile("f5")
+                && !c5Tree.containsFile("f1")
+                && !c5Tree.containsFile("f4"));
+
+        // Ensuring f2 has been edited
+        assertEquals(Utils.unzipFile("objects/" + c5Tree.getFileHash("f2")), "f2_edited");
+        assertEquals(Utils.unzipFile("objects/" + c5Tree.getFileHash("f3")), "f3");
+        assertEquals(Utils.unzipFile("objects/" + c5Tree.getFileHash("f5")), "f5");
+    }
+
     // Checks to see if a commit formatted correctly
     private boolean validCommit(String tree, String previousCommit, String nextCommit, String author,
             String summary) throws Exception {
@@ -192,7 +297,8 @@ public class CommitTester {
         String commitPartialString = tree + "\n" + previousCommit + "\n" + author + "\n" + date
                 + "\n" + summary;
         String commitPartialHash = Utils.hashString(commitPartialString);
-        String commitFullString = tree + "\n" + previousCommit + "\n" + nextCommit + "\n" + author + "\n" + date + "\n"
+        String commitFullString = tree + "\n" + previousCommit + "\n" + nextCommit + "\n" + author + "\n" + date
+                + "\n"
                 + summary;
 
         return (Utils.unzipFile("project/objects/" + commitPartialHash).equals(commitFullString));

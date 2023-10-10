@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Commit {
     protected String author, summary, parent, treeSha, date, child, hash, parentTree;
@@ -110,19 +112,81 @@ public class Commit {
         BufferedReader fileReader = new BufferedReader(new FileReader(indexPath.toString()));
         String nextLine = fileReader.readLine();
 
+        ArrayList<String> deletedFileHashes = new ArrayList<String>();
+        ArrayList<String> editedFileHashes = new ArrayList<String>();
+
+        // Reading the index file
         while (nextLine != null) {
-            tree.add(nextLine);
+            if (nextLine.substring(0, 9).equals("*deleted*")) {
+                deletedFileHashes.add(nextLine.substring(10));
+            } else if (nextLine.substring(0, 8).equals("*edited*")) {
+                editedFileHashes.add(nextLine.substring(9));
+            } else {
+                tree.add(nextLine);
+            }
             nextLine = fileReader.readLine();
+        }
+
+        // Checking if any files were deleted or edited
+        if (deletedFileHashes.size() + editedFileHashes.size() > 0) {
+            // Start looking through previous trees for deleted/edited files
+            String previousTreeHash = this.parentTree;
+
+            while (previousTreeHash != "") {
+                // Unzip and parse the previous tree
+                String previousTreeString = Utils.unzipFile(objectsPath.resolve(previousTreeHash).toString());
+                Tree previousTree = Tree.parseTreeFile(previousTreeString);
+
+                HashMap<String, String> fileMap = previousTree.getFileMap();
+
+                // Iterate through all the files in the previous tree
+                for (HashMap.Entry<String, String> file : fileMap.entrySet()) {
+                    if (deletedFileHashes.contains(file.getKey())) {
+                        // If the file is one of the ones we are deleting, remove it from our list of
+                        // files to delete
+                        deletedFileHashes.remove(file.getKey());
+                    } else if (editedFileHashes.contains(file.getKey())) {
+                        // If the file is one of the ones we are editing, remove it from our list of
+                        // files to edit and compute the hash of the file's new contents before adding
+                        // it to our tree
+                        editedFileHashes.remove(file.getKey());
+
+                        Blob blob = new Blob(file.getKey(), projectDirectory.toString());
+                        blob.writeToObjects();
+
+                        tree.add("blob : " + blob.getHash() + " : " + file.getKey());
+                    } else {
+                        // Otherwise, directly link to the file in our tree (because this previous tree
+                        // is no longer being linked to)
+                        tree.add("blob : " + file.getValue() + " : " + file.getKey());
+                    }
+                }
+
+                // If the earliest file we removed was removed in this tree, then we can safely
+                // add its parent tree (which we call the ancestor) to our commit
+                if (deletedFileHashes.size() == 0) {
+                    String ancestorTreeHash = previousTree.getPreviousTreeHash();
+                    if (ancestorTreeHash != "") {
+                        tree.add("tree : " + ancestorTreeHash);
+                    }
+
+                    // We can safely break from the loop now
+                    break;
+                } else {
+                    // Otherwise, continue looking back into the commit trees for files to delete
+                    previousTreeHash = previousTree.getPreviousTreeHash();
+                }
+            }
+        } else {
+            if (parentTree != "") {
+                tree.add("tree : " + parentTree);
+            }
         }
 
         fileReader.close();
 
         // Clears the index file
         Utils.writeFile(indexPath.toString(), "");
-
-        if (parentTree != "") {
-            tree.add("tree : " + parentTree);
-        }
 
         return tree.writeToObjects();
     }
