@@ -71,7 +71,7 @@ public class Tree {
         for (File child : parent.listFiles()) {
             if (child.list() == null) {
                 // If the folder contains a file, add the file to the tree
-                Blob blob = new Blob(child.getAbsolutePath());
+                Blob blob = new Blob(child.getAbsolutePath(), projectDirectory.toString());
                 blob.writeToObjects();
 
                 add("blob : " + blob.getHash() + " : " + child.getName());
@@ -138,6 +138,10 @@ public class Tree {
 
     public HashMap<String, String> getFileMap() {
         return blobMap;
+    }
+
+    public HashMap<String, String> getTreeMap() {
+        return treeMap;
     }
 
     public String getPreviousTreeHash() {

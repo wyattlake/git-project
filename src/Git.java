@@ -1,9 +1,11 @@
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class Git {
     protected Path projectDirectory, gitDirectory, objectsPath, indexPath;
+    static final String[] IGNORED_PATHS = { "objects", "HEAD", "index" };
 
     public Git() {
         this("");
@@ -121,6 +123,34 @@ public class Git {
         }
 
         Utils.appendToFile(indexPath.toString(), prefix + "*deleted* " + path);
+    }
+
+    public void checkout(String commitHash) throws Exception {
+        Utils.clearDirectory(projectDirectory.toString(), IGNORED_PATHS);
+        String commitTreeHash = Commit.getCommitTree(commitHash, projectDirectory.toString());
+        Tree commitTree = Tree.parseTreeFile(Utils.unzipFile(objectsPath.resolve(commitTreeHash).toString()));
+        checkoutHelper(commitTree, projectDirectory.toString() + ((projectDirectory.toString().equals("")) ? "" : "/"));
+    }
+
+    private void checkoutHelper(Tree tree, String directory) throws Exception {
+        // Create all files in tree
+        for (HashMap.Entry<String, String> fileEntry : tree.getFileMap().entrySet()) {
+            // Writes the unzipped blob contents to the current directory
+            Utils.writeFile(directory + fileEntry.getKey(),
+                    Utils.unzipFile(objectsPath.resolve(fileEntry.getValue()).toString()));
+        }
+
+        // Recursively create all folders in tree
+        for (HashMap.Entry<String, String> treeEntry : tree.getTreeMap().entrySet()) {
+            // Loads the child tree from the hash
+            Tree childTree = Tree.parseTreeFile(Utils.unzipFile(objectsPath.resolve(treeEntry.getValue()).toString()));
+
+            // Runs checkoutHelper with the tree's folder added to the base directory. If
+            // the tree is a previous commit tree and not a folder, nothing is added to the
+            // directory path
+            String childDirectory = (treeEntry.getKey().equals("")) ? "" : treeEntry.getKey() + "/";
+            checkoutHelper(childTree, directory + childDirectory);
+        }
     }
 
     /**

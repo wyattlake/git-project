@@ -102,6 +102,53 @@ public class Utils {
     }
 
     /**
+     * Deletes all files and folders within a directory
+     * 
+     * @param path   Path to directory
+     * @param ignore Files to ignore
+     * @throws IOException
+     */
+    public static void clearDirectory(String path, String[] ignore) throws IOException {
+        File directory = new File(path);
+
+        for (File file : directory.listFiles()) {
+            // Deletes only if not in ignore list
+            if (!contains(file.getName(), ignore)) {
+                if (file.isFile()) {
+                    Utils.deleteFile(file.toString());
+                } else {
+                    Utils.deleteDirectory(file.toString());
+                }
+            }
+        }
+    }
+
+    // Used for debugging
+    public static String listFiles(String path) throws IOException {
+        String result = "";
+        File directory = new File(path);
+
+        for (File file : directory.listFiles()) {
+            if (file.isFile()) {
+                result += file + "\n";
+            } else {
+                result += file + "/\n";
+            }
+        }
+
+        return result;
+    }
+
+    private static boolean contains(String key, String[] list) {
+        for (String item : list) {
+            if (key.equals(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Deletes a file at a given path
      * 
      * @param path
